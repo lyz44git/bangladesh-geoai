@@ -24,20 +24,25 @@ Full write-up: [`docs/TECHNICAL_REPORT_EN.md`](docs/TECHNICAL_REPORT_EN.md). Ind
 
 ## Data
 
-All inputs are open. No data are stored in this repository; the scripts stream or download them.
+All inputs are openly available. No data are stored in this repository; the scripts stream or download them.
 
-| Source | Use |
-|---|---|
-| Sentinel-2 L2A (ESA/Copernicus), via AWS Open Data and the Earth Search STAC API | Annual dry-season composites, 2018–2026 |
-| ESA WorldCover 2020 and 2021, 10 m | Built-up training labels, land-cover shares, water mask |
-| Meta Relative Wealth Index (Chi et al. 2022) | Wealth-mapping target (26,544 grid points) |
-| Flowminder/WorldPop poverty layer (2011) | Alternative target and external benchmark |
-| Meta/CIESIN High Resolution Settlement Layer | Population by cell and upazila |
-| Overture Maps transportation | Road, rail and ferry network for the travel-time model |
-| GADM 4.1 | Districts and upazilas |
+| Source | Use | Licence |
+|---|---|---|
+| Sentinel-2 L2A (ESA/Copernicus), via AWS Open Data and the Earth Search STAC API | Annual dry-season composites, 2018–2026 | Copernicus Sentinel data terms (free use with attribution) |
+| ESA WorldCover 2020 and 2021, 10 m | Built-up training labels, land-cover shares, water mask | CC BY 4.0 |
+| Meta Relative Wealth Index (Chi et al. 2022), via HDX | Wealth-mapping target (26,544 grid points) | CC BY-NC 4.0 |
+| Flowminder/WorldPop Bangladesh 1 km poverty map (2011) | Alternative target and external benchmark | CC BY 4.0 |
+| Meta/CIESIN High Resolution Settlement Layer | Population by cell and upazila | CC BY 4.0 |
+| Overture Maps transportation | Road, rail and ferry network for the travel-time model | ODbL 1.0 |
+| GADM 4.1 | Districts and upazilas | Free for academic and non-commercial use; no redistribution |
 
-Each source keeps its own licence and attribution terms. The atlas and the tables in `outputs/` are derived
-aggregates.
+Attribution: contains modified Copernicus Sentinel data (2018–2026); © ESA WorldCover project / contains modified
+Copernicus Sentinel data (2020, 2021) processed by the ESA WorldCover consortium; © OpenStreetMap contributors,
+Overture Maps Foundation.
+
+No boundary files or source rasters are redistributed here. Tables, maps and the atlas in `outputs/` and `docs/` are
+derived aggregates; those that include the Relative Wealth Index inherit its non-commercial terms, and the maps use
+GADM boundaries under its academic-use terms.
 
 ## Method
 
@@ -166,7 +171,8 @@ equilibrium solver (one needs PyTorch and is skipped without it). They run on ev
 
 ## Licence
 
-Code is released under the MIT licence (see `LICENSE`). The datasets keep their own terms.
+Code is released under the MIT licence (see `LICENSE`). The datasets and the derived outputs keep the terms listed
+under Data.
 
 ## Notes
 
