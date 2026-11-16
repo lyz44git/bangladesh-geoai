@@ -1,0 +1,17 @@
+{
+  "_note": "City centres are approximate (decimal degrees, WGS84); boxes are deliberately generous so the built-up extent of each metro area fits inside. The Padma study region covers the south-west (which the bridge connects to Dhaka) plus Dhaka-side and north-west comparison areas.",
+  "cities": {
+    "dhaka":      {"lon": 90.40, "lat": 23.78, "half_km": 25},
+    "chattogram": {"lon": 91.82, "lat": 22.35, "half_km": 20},
+    "khulna":     {"lon": 89.55, "lat": 22.82, "half_km": 15},
+    "rajshahi":   {"lon": 88.60, "lat": 24.37, "half_km": 15},
+    "sylhet":     {"lon": 91.87, "lat": 24.90, "half_km": 15},
+    "barishal":   {"lon": 90.36, "lat": 22.70, "half_km": 12}
+  },
+  "city_res_m": 20,
+  "padma_region": {"lon_min": 88.85, "lat_min": 21.95, "lon_max": 90.95, "lat_max": 24.45},
+  "padma_res_m": 30,
+  "national": {"lon_min": 88.0, "lat_min": 20.55, "lon_max": 92.7, "lat_max": 26.65},
+  "national_res_m": 40,
+  "years": [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+}

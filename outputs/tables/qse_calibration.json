@@ -1,0 +1,36 @@
+{
+  "n_units": 544,
+  "params": {
+    "sigma": 5.0,
+    "alpha": 0.75,
+    "alpha_N": 0.3,
+    "kappa": 1.0,
+    "eps": 3.0,
+    "wage_sd": 0.25
+  },
+  "eta": 1.3277531024540112,
+  "eta_se": 0.028812700203715007,
+  "rf_coef": 0.0596,
+  "rf_se": 0.089,
+  "own_trade_share_median": 0.014971571612623653,
+  "own_trade_share_p10_p90": [
+    0.005863901523213699,
+    0.04204701319843271
+  ],
+  "local_goods_spending_share_median": 0.40898294296757415,
+  "median_tt_pre_h": 6.807952046394348,
+  "share_pairs_faster_10pct": 0.22042941717128028,
+  "treated_units_D_gt_0_1": 131,
+  "treated_pop_share": 0.18770172311767935,
+  "main": {
+    "welfare_sr_pct": 0.47252681724208045,
+    "welfare_lr_pct": 0.47594537126041114,
+    "real_income_sr_treated_pct": 1.8824923082458644,
+    "real_income_sr_rest_pct": 0.14671921709097369,
+    "pop_lr_treated_pct": 2.579363210147889,
+    "pop_lr_dhaka_district_pct": -0.06292592106974526,
+    "pop_lr_max_upazila_pct": 14.692637606538806,
+    "implied_rf_coef": 0.0590700550227711,
+    "converged": true
+  }
+}

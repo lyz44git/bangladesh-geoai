@@ -1,0 +1,22 @@
+[project]
+name = "geoai-bd"
+version = "0.1.0"
+description = "GeoAI toolkit and studies on Bangladesh: urban expansion, imagery-based wealth prediction, and causal evaluation of the Padma Bridge"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy", "pandas", "rasterio>=1.3", "pystac-client", "geopandas", "shapely>=2", "pyproj",
+  "scikit-learn", "lightgbm", "matplotlib", "statsmodels", "pyarrow", "requests", "scikit-image", "duckdb",
+]
+[project.optional-dependencies]
+dl = ["torch"]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

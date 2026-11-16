@@ -1,0 +1,32 @@
+{
+ "standard_errors": {
+  "upazila clusters": 0.04812503123268066,
+  "district clusters": 0.08854480218372088
+ },
+ "model_implied_effects_full_adjustment": {
+  "main parameters": 0.0590700550227711,
+  "mean of 600 prior draws": 0.04805521009273615
+ },
+ "power": {
+  "main parameters, full adjustment": {
+   "upazila clusters": 0.23263882713638492,
+   "district clusters": 0.1023385974336005
+  },
+  "main parameters, half adjustment": {
+   "upazila clusters": 0.09414221340908951,
+   "district clusters": 0.06284081826480624
+  },
+  "mean of 600 prior draws, full adjustment": {
+   "upazila clusters": 0.16971745097042232,
+   "district clusters": 0.08436883218189252
+  },
+  "mean of 600 prior draws, half adjustment": {
+   "upazila clusters": 0.07901195049210152,
+   "district clusters": 0.05847757139290553
+  }
+ },
+ "se_needed_for_80pct_power": {
+  "main parameters": 0.021084512882090352,
+  "mean of 600 prior draws": 0.017152865286163423
+ }
+}

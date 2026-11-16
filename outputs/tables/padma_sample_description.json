@@ -1,0 +1,13 @@
+{
+  "n_cells": 34626,
+  "n_obs": 242382,
+  "n_upazila": 276,
+  "n_district": 39,
+  "share_treated_D_gt_0_05": 0.6043724368971293,
+  "D_mean_treated": 0.4439484775066376,
+  "D_p50_treated": 0.41278088092803955,
+  "D_p90": 0.5970780253410339,
+  "built_pre_mean": 1.0997107028961182,
+  "built_pre_mean_treated": 0.3673160970211029,
+  "built_pre_mean_control": 2.218538522720337
+}

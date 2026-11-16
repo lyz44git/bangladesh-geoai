@@ -1,0 +1,23 @@
+[
+  {
+    "spec": 1,
+    "coef_cell_D": -0.3393757020433289,
+    "coef_upazila_mean_D": -0.3705189741416733,
+    "p_two_sided": 0.008,
+    "n_perm": 1000
+  },
+  {
+    "spec": 2,
+    "coef_cell_D": 0.05956874319748847,
+    "coef_upazila_mean_D": 0.0652420863521745,
+    "p_two_sided": 0.917,
+    "n_perm": 1000
+  },
+  {
+    "spec": 3,
+    "coef_cell_D": -0.0020316914874424267,
+    "coef_upazila_mean_D": 0.002061477988083265,
+    "p_two_sided": 0.981,
+    "n_perm": 1000
+  }
+]
