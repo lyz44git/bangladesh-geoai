@@ -44,6 +44,9 @@ No boundary files or source rasters are redistributed here. Tables, maps and the
 derived aggregates; those that include the Relative Wealth Index inherit its non-commercial terms, and the maps use
 GADM boundaries under its academic-use terms.
 
+**Use.** This is a non-commercial research project. The data and all derived outputs in this repository are used
+for research only.
+
 ## Method
 
 | Module | Code | What it does |
