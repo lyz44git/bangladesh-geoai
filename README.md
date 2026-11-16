@@ -2,6 +2,10 @@
 
 [![tests](https://github.com/lyz44git/bangladesh-geoai/actions/workflows/tests.yml/badge.svg)](https://github.com/lyz44git/bangladesh-geoai/actions/workflows/tests.yml)
 
+<img src="figures/figure1.png" alt="Four-panel figure: built-up growth by city; wealth-prediction accuracy by feature set; Padma Bridge event study; model-implied income change by upazila." width="100%">
+
+**Figure 1 | Headline results.** **a**, Growth in built-up area, 2020–2026, in the six largest cities, split by where the new building is. **b**, Out-of-sample R² for upazila wealth by feature set under 50 km spatial-block cross-validation (filled) and random cross-validation (open), which overstates accuracy. **c**, Event-study estimates of the Padma Bridge's effect on built-up share with 95% CIs across 34,626 cells; 2022 is the reference year, and the negative naive estimates disappear once trends by baseline density are controlled. **d**, Short-run real income change implied by the spatial equilibrium model against the reduction in travel time to Dhaka, one point per upazila, sized by population; the dashed line is the national welfare gain. Drawn by [`figures/make_figure1.py`](figures/make_figure1.py) from `outputs/tables` and `docs/atlas`.
+
 A Python package and pipeline that uses open satellite and geospatial data to measure urban expansion, map
 sub-district wealth, and evaluate the Padma Bridge (opened 25 June 2022) with a difference-in-differences design and
 a quantitative spatial equilibrium model.
