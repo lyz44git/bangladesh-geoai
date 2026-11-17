@@ -1,5 +1,5 @@
 ---
-title: "Can Open Satellite Data Evaluate a Major Transport Investment? Measurement, Urban Growth and the Padma Bridge in Bangladesh (2018–2026)"
+title: "Evaluating a Major Transport Investment with Open Satellite Data: Measurement, Urban Growth and the Padma Bridge in Bangladesh (2018–2026)"
 subtitle: "Technical Report and Sub-District Indicator Atlas"
 date: "November 2026"
 ---
@@ -8,22 +8,22 @@ Independent research project · Code, data pipeline, tests and results are in th
 
 ## Abstract
 
-The Padma Bridge (opened 25 June 2022) connected south-western Bangladesh to Dhaka. This report asks whether free, open satellite data can support an early evaluation of such an investment, and answers in four steps, each a precondition for the next. **Measurement:** annual dry-season Sentinel-2 composites (2018–2026) classified by a U-Net trained on ESA WorldCover labels reach F1 = 0.80 on spatially held-out city blocks, a phenology-balanced compositing design roughly halves year-to-year noise, and imagery predicts the Meta Relative Wealth Index with out-of-area R² = 0.45 for grid cells and 0.83 for upazila means (0.50 and 0.92 under random cross-validation, which overstates accuracy). **Description:** built-up area in the six largest cities grew by 27% (Dhaka) to 72% (Barishal) between 2020 and 2026, mostly through edge expansion, with flattening density gradients. **Evaluation:** a continuous-treatment difference-in-differences design on 34,626 grid cells × 7 seasons finds no detectable effect of the bridge on built-up land within four years (0.060 percentage points per log point of travel-time reduction, 95% CI −0.03 to 0.15), after showing that the naive estimate (−0.34) reflects selection on baseline trends. **Interpretation:** a two-sector quantitative spatial equilibrium model of 544 upazilas implies an effect of almost exactly that size, against which the design has only 8–23% power, so the null is uninformative about welfare. The model puts the national welfare gain at +0.47% (0.30–0.79% across the parameter grid of Table 8), with real income +1.9% in beneficiary areas and small losses in Rajshahi and Rangpur through trade diversion; omitting the local non-traded sector overstates gains by about 70%. Open imagery is therefore fit for monitoring and geographic targeting now, but not yet for judging a transport investment four years in. The accompanying atlas reports 16 indicators for all 544 upazilas.
+The Padma Bridge (opened 25 June 2022) connected southwestern Bangladesh to Dhaka. This report examines whether free, open satellite data can support an early evaluation of such an investment, proceeding in four steps, each a precondition for the next. **Measurement:** annual dry-season Sentinel-2 composites (2018–2026) classified by a U-Net trained on ESA WorldCover labels reach F1 = 0.80 on spatially held-out city blocks, a phenology-balanced compositing design roughly halves year-to-year noise, and imagery predicts the Meta Relative Wealth Index with out-of-area R² = 0.45 for grid cells and 0.83 for upazila means (0.50 and 0.92 under random cross-validation, which overstates accuracy). **Description:** built-up area in the six largest cities grew by 27% (Dhaka) to 72% (Barishal) between 2020 and 2026, mostly through edge expansion, with flattening density gradients. **Evaluation:** a continuous-treatment difference-in-differences design on 34,626 grid cells × 7 seasons finds no detectable effect of the bridge on built-up land within four years (0.060 percentage points per log point of travel-time reduction, 95% CI −0.03 to 0.15), after showing that the naive estimate (−0.34) reflects selection on baseline trends. **Interpretation:** a two-sector quantitative spatial equilibrium model of 544 upazilas implies an effect of almost exactly that size, against which the design has only 8–23% power, so the null is uninformative about welfare. The model puts the national welfare gain at +0.47% (0.30–0.79% across the parameter grid of Table 8), with real income +1.9% in beneficiary areas and small losses in Rajshahi and Rangpur through trade diversion; omitting the local non-traded sector overstates gains by about 70%. Open imagery is therefore suitable for monitoring and geographic targeting, but not yet for evaluating a transport investment four years after its completion. The accompanying atlas reports 16 indicators for all 544 upazilas.
 
-## 1. Question and approach
+## 1. Research question and design
 
-Bangladesh is one of the fastest-urbanising and most densely populated countries in the world, yet official data on where people live, how cities grow, and who benefits from large public investments are sparse and slow to arrive. The Padma Bridge, a 6.15 km road-rail bridge opened on 25 June 2022, replaced ferry crossings that often involved hours of queueing and were suspended in the monsoon, and connected the south-western divisions to Dhaka. Ex-ante appraisals projected national GDP gains above 1% and regional gains above 2%.
+Bangladesh is one of the fastest-urbanizing and most densely populated countries in the world, yet official data on where people live, how cities grow, and who benefits from large public investments are sparse and slow to arrive. The Padma Bridge, a 6.15 km road-rail bridge opened on 25 June 2022, replaced ferry crossings that often involved hours of queuing and were suspended in the monsoon, and connected the southwestern divisions to Dhaka. Ex-ante appraisals projected national GDP gains above 1% and regional gains above 2%.
 
-Household surveys that could test these projections arrive years after the fact. Satellite imagery is free, annual and covers every upazila. The report asks whether it can support an early evaluation, and answers in four steps, each a precondition for the next:
+Household surveys that could test these projections become available only years later, whereas satellite imagery is free, annual and covers every upazila. The report examines whether such imagery can support an early evaluation, proceeding in four steps, each a precondition for the next:
 
 | Step | Question | Approach | Section |
 |---|---|---|---|
 | 1. Measure | Is imagery accurate enough for annual measures of built-up land and wealth? | U-Net on WorldCover labels; wealth prediction under 50 km spatial-block cross-validation | 3 |
-| 2. Describe | What does it show where change is large? | Built-up area in the six largest cities, 2020–2026 | 4 |
-| 3. Evaluate | Did the bridge change where building happens? | Continuous-treatment difference-in-differences and event study, 34,626 cells × 7 seasons | 5 |
-| 4. Interpret | Is a null evidence that the bridge had no effect? | Two-sector spatial equilibrium model of 544 upazilas; power of the design against the model's prediction | 6 |
+| 2. Describe | What does it show where change is rapid? | Built-up area in the six largest cities, 2020–2026 | 4 |
+| 3. Evaluate | Did the bridge change where new built-up land appears? | Continuous-treatment difference-in-differences and event study, 34,626 cells × 7 seasons | 5 |
+| 4. Interpret | Is a null result evidence that the bridge had no effect? | Two-sector spatial equilibrium model of 544 upazilas; power of the design against the model's prediction | 6 |
 
-Each section states its answer first, then the method and the evidence, and ends with what the answer means for the next step.
+Each section states its finding first, then presents the method and the evidence, and closes with the implications for the next step.
 
 ## 2. Data
 
@@ -41,21 +41,21 @@ All inputs are open data (Table 1). No household survey microdata and no fiscal 
 | Overture Maps transportation | 257,645 road and ferry segments | Travel-time model, bridge identification |
 | GADM 4.1 | Country, 64 districts, 545 upazilas (544 used) | Units of analysis, clustering, atlas |
 
-All layers are placed on a custom transverse Mercator projection centred on 90°E with grid origins snapped to 1 km, so that the 20 m (cities), 30 m (Padma region), 40 m (national), 200 m, 500 m, 1 km and 1.2 km grids nest exactly.
+All layers are placed on a custom transverse Mercator projection centered on 90°E with grid origins snapped to 1 km, so that the 20 m (cities), 30 m (Padma region), 40 m (national), 200 m, 500 m, 1 km and 1.2 km grids nest exactly.
 
-## 3. Step 1 — Measurement: imagery is accurate enough for monitoring and targeting
+## 3. Step 1. Measurement: accuracy is sufficient for monitoring and targeting
 
-Built-up maps are accurate at city scale once compositing removes seasonal noise, and imagery predicts upazila wealth well out of area. Both results carry conditions that matter later: accuracy falls where settlement is sparse, and the reliability of change over time depends on compositing more than on the classifier.
+Built-up maps are accurate at city scale once compositing removes seasonal noise, and imagery predicts upazila wealth well out of area. Both results are subject to conditions that matter for later steps: accuracy falls where settlement is sparse, and the reliability of change over time depends on compositing more than on the classifier.
 
 ### 3.1 Image compositing
 
 Cloud-free observations are scarce during the June–October monsoon, so each year is represented by a dry-season composite (15 November of the previous year to 31 March). Pixels flagged as cloud, shadow or cirrus by the scene classification layer are dropped and the per-pixel median of the remaining observations is taken; the number of clear observations is stored alongside each composite.
 
-Scene selection matters more than it first appears. Selecting the *N* least cloudy scenes per tile gives every year a different mix of acquisition dates: some years are dominated by post-harvest bare fields in November–December, others by flooded boro rice in January–February. A classifier reads these spectral differences as built-up change. The final design therefore splits the season into six equal date windows and keeps the least cloudy scene in each window (preferring Collection 1 and back-filling windows it does not cover from the original archive). A second artefact arises because some MGRS tiles are imaged from two partially overlapping orbits; when per-tile selection picked all scenes from one orbit, 22% of the Khulna window had no clear observation in 2026. An orbit-aware gap-fill re-selects scenes per tile and relative orbit and replaces only the affected pixels.
+Scene selection has a larger effect than might be expected. Selecting the *N* least cloudy scenes per tile gives every year a different mix of acquisition dates: some years are dominated by post-harvest bare fields in November–December, others by flooded boro rice in January–February. A classifier reads these spectral differences as built-up change. The final design therefore splits the season into six equal date windows and keeps the least cloudy scene in each window (preferring Collection 1 and back-filling windows it does not cover from the original archive). A second artifact arises because some MGRS tiles are imaged from two partially overlapping orbits; when per-tile selection picked all scenes from one orbit, 22% of the Khulna window had no clear observation in 2026. An orbit-aware gap-fill re-selects scenes per tile and relative orbit and replaces only the affected pixels.
 
 ### 3.2 Built-up classification
 
-Two classifiers are trained against WorldCover built-up fractions: a LightGBM pixel classifier with 28 spectral, index and texture features, and a small U-Net (12 input channels, 64 × 64 patches, soft-label cross-entropy, flips, rotations and radiometric jitter; trained on the 2020 and 2021 seasons on CPU). Accuracy is evaluated on 4 km spatial-block folds so that spatially autocorrelated neighbours cannot leak between training and test sets. Because the LightGBM model is trained on balanced samples it over-predicts at a 0.5 cut-off; its threshold is tuned on a separate fold.
+Two classifiers are trained against WorldCover built-up fractions: a LightGBM pixel classifier with 28 spectral, index and texture features, and a small U-Net (12 input channels, 64 × 64 patches, soft-label cross-entropy, flips, rotations and radiometric jitter; trained on the 2020 and 2021 seasons on CPU). Accuracy is evaluated on 4 km spatial-block folds so that spatially autocorrelated neighbors cannot leak between training and test sets. Because the LightGBM model is trained on balanced samples it over-predicts at a 0.5 cut-off; its threshold is tuned on a separate fold.
 
 **Table 2. Built-up classification on spatially held-out blocks (six cities pooled, 4.07 million pixels)**
 
@@ -65,11 +65,11 @@ Two classifiers are trained against WorldCover built-up fractions: a LightGBM pi
 | LightGBM, tuned threshold 0.95 | 0.78 | 0.79 | 0.78 | 0.64 | 7.2% / 7.2% |
 | U-Net (two training seasons) | 0.86 | 0.75 | 0.80 | 0.67 | 6.2% / 7.2% |
 
-In the rural Padma region (built share 1.3%), the U-Net reaches precision 0.79 and recall 0.56 (F1 0.66): dispersed settlement is harder to see, and the classifier errs on the side of omission.
+In the rural Padma region (built share 1.3%), the U-Net reaches precision 0.79 and recall 0.56 (F1 0.66): dispersed settlement is harder to detect, and the errors are predominantly omissions.
 
 ### 3.3 Temporal consistency
 
-Two statistics summarise the reliability of the annual series over 2020–2026: the *reversal rate* (share of pixels built in year *t* and classified non-built in *t*+1; true reversals are rare, so this is mostly noise) and the *trend residual SD* (standard deviation of residuals of log built-up area around a linear trend).
+Two statistics summarize the reliability of the annual series over 2020–2026: the *reversal rate* (share of pixels built in year *t* and classified non-built in *t*+1; true reversals are rare, so this is mostly noise) and the *trend residual SD* (standard deviation of residuals of log built-up area around a linear trend).
 
 The phenology-balanced design roughly halves year-to-year noise (Table 3). Under least-cloudy selection, Dhaka's raw annual built-up area swung by −26% and +48% between adjacent years.
 
@@ -88,7 +88,7 @@ This error is non-classical: it is correlated with season and weather, and there
 
 ### 3.4 Wealth mapping
 
-For each RWI grid cell, features are (a) Sentinel-2 band and index statistics, (b) 1,024 MOSAIKS random convolutional features (Rolf et al. 2021), (c) WorldCover land-cover shares and (d) context variables (population and modelled travel time to Dhaka). Gradient boosting and ridge models are evaluated under two cross-validation designs: 50 km spatial blocks, which mimic extrapolation to unsurveyed areas, and random splits. Accuracy is reported at cell level and for upazila means (n = 504).
+For each RWI grid cell, features are (a) Sentinel-2 band and index statistics, (b) 1,024 MOSAIKS random convolutional features (Rolf et al. 2021), (c) WorldCover land-cover shares and (d) context variables (population and modeled travel time to Dhaka). Gradient boosting and ridge models are evaluated under two cross-validation designs: 50 km spatial blocks, which mimic extrapolation to unsurveyed areas, and random splits. Accuracy is reported at cell level and for upazila means (n = 504).
 
 **Table 4. Out-of-sample R² for the Meta Relative Wealth Index (spatial-block CV; random CV in parentheses)**
 
@@ -101,19 +101,19 @@ For each RWI grid cell, features are (a) Sentinel-2 band and index statistics, (
 | All imagery features | 0.41 (0.47) | 0.80 (0.90) |
 | Imagery + context | **0.45 (0.50)** | **0.83 (0.92)** |
 
-Three findings matter for practice. First, the built environment carries most of the signal: land-cover shares alone explain 35% of cell-level variation and the WorldCover built share accounts for 31% of model gain, while location variables add only 0.03. Imagery-based wealth proxies are, to a large extent, urbanisation proxies. Second, random cross-validation overstates accuracy in unsurveyed areas by about 0.05 at cell level and 0.08–0.09 at upazila level; targeting applications face exactly this extrapolation problem. Third, aggregation to upazilas lifts accuracy above 0.8, which is usable for geographic targeting, whereas cell-level accuracy is not sufficient for within-village targeting. Against the independent survey-based 2011 poverty layer (Spearman 0.41 with the RWI), conclusions are unchanged (imagery + context: 0.47 cell, 0.81 upazila).
+Three findings are relevant for practice. First, the built environment carries most of the signal: land-cover shares alone explain 35% of cell-level variation and the WorldCover built share accounts for 31% of model gain, while location variables add only 0.03. Imagery-based wealth proxies are, to a large extent, urbanization proxies. Second, random cross-validation overstates accuracy in unsurveyed areas by about 0.05 at cell level and 0.08–0.09 at upazila level; targeting applications face precisely this extrapolation problem. Third, aggregation to upazilas lifts accuracy above 0.8, which is usable for geographic targeting, whereas cell-level accuracy is not sufficient for within-village targeting. Against the independent survey-based 2011 poverty layer (Spearman 0.41 with the RWI), conclusions are unchanged (imagery + context: 0.47 cell, 0.81 upazila).
 
 ![Figure 1. Wealth predicted from imagery out of area, prediction against label by upazila, accuracy by feature set and validation scheme, and year-to-year noise under two compositing designs.](../outputs/figures/measurement.png)
 
-**What this means for the next steps.** The built-up series is reliable enough to track change in cities (Section 4) and, with less precision, in the rural areas the bridge reaches (Section 5). The wealth index also sets relative wages in the spatial model (Section 6); the imagery model shows that this input can be largely reproduced from imagery out of area.
+**Implications for the next steps.** The built-up series is reliable enough to track change in cities (Section 4) and, with less precision, in the rural areas the bridge reaches (Section 5). The wealth index also sets relative wages in the spatial model (Section 6); the imagery model indicates that this input can be largely reproduced from imagery out of area.
 
-## 4. Step 2 — Description: where change is large, cities grow at the edge
+## 4. Step 2. Description: urban growth is concentrated at the edge
 
 The six largest cities added 27–72% to their built-up area between 2020 and 2026, mostly at the urban edge, and their density gradients flattened.
 
 ### 4.1 Expansion metrics
 
-For six cities (Dhaka, Chattogram, Khulna, Rajshahi, Sylhet, Barishal), annual probabilities are smoothed with a three-year moving median, built-up is treated as persistent, and 2020 and 2026 footprints are compared. New patches are classified with the Landscape Expansion Index (Liu et al. 2010) into infill, edge expansion and outlying development, and a negative-exponential density gradient is fitted to built-up share by distance from the centre.
+For six cities (Dhaka, Chattogram, Khulna, Rajshahi, Sylhet, Barishal), annual probabilities are smoothed with a three-year moving median, built-up is treated as persistent, and 2020 and 2026 footprints are compared. New patches are classified with the Landscape Expansion Index (Liu et al. 2010) into infill, edge expansion and outlying development, and a negative-exponential density gradient is fitted to built-up share by distance from the center.
 
 ### 4.2 Results
 
@@ -128,25 +128,25 @@ For six cities (Dhaka, Chattogram, Khulna, Rajshahi, Sylhet, Barishal), annual p
 | Sylhet | 16 → 23 | +41% | 5.8% | 30% / 55% / 15% | 0.886 → 0.710 |
 | Barishal | 7 → 12 | +72% | 9.5% | 28% / 61% / 11% | — → 1.006 |
 
-Edge expansion accounts for 50–64% of new built-up land, infill for 18–40% and outlying development for 9–18%; new development follows radial roads. Secondary cities grow faster than Dhaka, and density gradients flatten in every city where both years can be compared, consistent with suburbanisation in a monocentric framework (lower commuting costs or rising incomes; the data cannot separate the two). Because 10–20 m imagery cannot see vertical densification, Dhaka's +27% is a horizontal measure that understates growth in the core.
+Edge expansion accounts for 50–64% of new built-up land, infill for 18–40% and outlying development for 9–18%; new development follows radial roads. Secondary cities grow faster than Dhaka, and density gradients flatten in every city where both years can be compared, consistent with suburbanization in a monocentric framework (lower commuting costs or rising incomes; the data cannot separate the two). Because 10–20 m imagery cannot detect vertical densification, Dhaka's +27% is a horizontal measure that understates growth in the core.
 
 ![Figure 2. Built-up land in 2020 (dark) and land added 2020–2026 (orange), six cities.](../outputs/figures/urban_change_maps.png)
 
-In Dhaka and Chattogram the largest additions lie 4–7 km from the centre; in the four smaller cities they lie within about 3 km (Figure 3, drawn from the re-run rasters described in Section 9).
+In Dhaka and Chattogram the largest additions lie 4–7 km from the center; in the four smaller cities they lie within about 3 km (Figure 3, drawn from the re-run rasters described in Section 9).
 
-![Figure 3. Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city centre; density gradients in 2020 and 2026.](../outputs/figures/urban_area_and_profiles.png)
+![Figure 3. Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city center; density gradients in 2020 and 2026.](../outputs/figures/urban_area_and_profiles.png)
 
-**What this means for the next steps.** Cities add 4.0–9.5% to their built-up area each year. The rural areas the bridge reaches start from 0.37% built-up, so any bridge effect on built-up land is small in absolute terms, which bears directly on the power of the evaluation in Section 6.
+**Implications for the next steps.** Built-up area in the six cities grows by 4.0–9.5% a year. By contrast, the rural areas the bridge reaches start from 0.37% built-up, so any bridge effect on built-up land is necessarily small in absolute terms, which bears directly on the power of the evaluation in Section 6.
 
-## 5. Step 3 — Evaluation: no detectable effect of the bridge on built-up land
+## 5. Step 3. Evaluation: no detectable effect of the bridge on built-up land
 
 Once selection on baseline trends is removed, the bridge has no detectable effect on built-up land in its first four years, and the null is robust to the main design choices.
 
 ### 5.1 Exposure: travel time and treatment intensity
 
-A 500 m friction surface assigns speeds by Overture road class (motorway 70, trunk 50, primary 40, secondary 30, tertiary 25 km/h; 5 km/h off-road), makes cells with more than 50% water impassable except where a road or ferry route crosses, and gives ferries an effective speed of 2 km/h to fold in waiting time (1.5 and 4 km/h in sensitivity). Least-cost travel time to Dhaka is computed with and without the two motorway segments that form the bridge (8.63 and 9.02 km). Treatment intensity is D = log(travel time without bridge) − log(travel time with bridge).
+A 500 m friction surface assigns speeds by Overture road class (motorway 70, trunk 50, primary 40, secondary 30, tertiary 25 km/h; 5 km/h off-road), makes cells with more than 50% water impassable except where a road or ferry route crosses, and gives ferries an effective speed of 2 km/h to account for waiting time (1.5 and 4 km/h in sensitivity). Least-cost travel time to Dhaka is computed with and without the two motorway segments that form the bridge (8.63 and 9.02 km). Treatment intensity is D = log(travel time without bridge) − log(travel time with bridge).
 
-Modelled travel time to Dhaka falls from 3.71 to 1.23 hours at Bhanga, from 5.59 to 3.12 hours in Barishal and from 6.03 to 3.55 hours in Khulna, while northern cities are unaffected. Sixty per cent of panel cells have D > 0.05; among them the mean reduction is 36% (D = 0.44). Treated areas are far more rural than the rest of the region: 0.37% built-up before opening against 2.22%.
+Modeled travel time to Dhaka falls from 3.71 to 1.23 hours at Bhanga, from 5.59 to 3.12 hours in Barishal and from 6.03 to 3.55 hours in Khulna, while northern cities are unaffected. Sixty percent of panel cells have D > 0.05; among them the mean reduction is 36% (D = 0.44). Treated areas are far more rural than the rest of the region: 0.37% built-up before opening against 2.22%.
 
 ### 5.2 Design
 
@@ -167,23 +167,23 @@ The outcome is the share of each 1.2 km cell classified built-up, on a balanced 
 | (2), excluding cells < 10 km from bridge / < 30 km from Dhaka | 0.069 / 0.062 | | |
 | (2), baseline built < 5% / ≥ 5% | 0.041 / 0.812 | | |
 
-The negative coefficient in specification (1) is selection on trends: places with more built-up land add more percentage points each year, so a comparison that ignores baseline density attributes the capital region's faster urbanisation to the absence of treatment. Once baseline-density-specific trends are controlled, pre-trends disappear (2020: −0.015, SE 0.038; 2021: −0.038, SE 0.064) and the effect is a precise null. The upper bound of the confidence interval implies at most about 0.07 percentage points for a typical treated cell over four years, roughly 18% of its baseline level: large, immediate urban expansion can be ruled out, moderate relative growth cannot. Scattered positive signs (binary treatment, rural subsample, the single year 2024) do not survive district clustering or randomization inference, and the event-study shape (a peak in 2024, lower in 2025–26) resembles measurement noise rather than accumulating construction.
+The negative coefficient in specification (1) is selection on trends: places with more built-up land add more percentage points each year, so a comparison that ignores baseline density attributes the capital region's faster urbanization to the absence of treatment. Once baseline-density-specific trends are controlled, pre-trends disappear (2020: −0.015, SE 0.038; 2021: −0.038, SE 0.064) and the effect is a precise null. The upper bound of the confidence interval implies at most about 0.07 percentage points for a typical treated cell over four years, roughly 18% of its baseline level: large, immediate urban expansion can be ruled out, moderate relative growth cannot. Isolated positive estimates (binary treatment, rural subsample, the single year 2024) do not survive district clustering or randomization inference, and the event-study shape (a peak in 2024, lower in 2025–26) resembles measurement noise rather than accumulating construction.
 
 The 2018–2019 archive cannot be used to extend the pre-period: it comes from a different processing baseline, pre-period coefficients jump to +1.9 to +2.8 points, and a placebo "opening in 2020" fails for measurement rather than identification reasons.
 
 ![Figure 4. Travel-time reduction on a 500 m grid, event-study estimates and robustness of the coefficient.](../outputs/figures/padma_treatment_and_event_study.png)
 
-A specification error found during the work is worth recording: when baseline-built bins were first computed by ranking observations rather than cells, tied zero-built cells moved between bins across years and produced a spurious positive effect of +0.20 points (SE 0.08). Defining bins per cell removed it.
+A specification error identified during the work is documented here: when baseline-built bins were first computed by ranking observations rather than cells, tied zero-built cells moved between bins across years and produced a spurious positive effect of +0.20 points (SE 0.08). Defining bins per cell removed it.
 
-**What this means for the next step.** A null can mean that the bridge had no effect or that the test could not see one. Section 6 asks which.
+**Implication for the next step.** A null result is consistent either with no effect or with a test that lacks the power to detect one; Section 6 distinguishes between the two.
 
-## 6. Step 4 — Interpretation: the null is uninformative; the model implies a gain of +0.47%
+## 6. Step 4. Interpretation: the null is uninformative, and the model implies a gain of +0.47%
 
-A calibrated spatial model predicts a built-up effect of almost exactly the size estimated, and the design has only 8–23% power to detect it. The model's welfare gain is +0.47%, concentrated in the south-west, with small losses in the north-west.
+A calibrated spatial model predicts a built-up effect of almost exactly the size estimated, and the design has only 8–23% power to detect it. The model's welfare gain is +0.47%, concentrated in the southwest, with small losses in the northwest.
 
 ### 6.1 Model
 
-The model (Redding 2016 class) has 544 upazilas producing CES traded varieties whose number is proportional to population (the agglomeration force), a local non-traded sector produced with local labour (expenditure share α_N = 0.30), housing in fixed supply (share 0.25), and Fréchet idiosyncratic location preferences with migration elasticity ε (the long run); the short run holds population fixed. Iceberg trade costs are a power function of bilateral road travel time, computed as a 544 × 544 matrix with and without the bridge. Baseline trade shares are calibrated by Sinkhorn matrix scaling so that sales equal income in every upazila; counterfactuals are solved in exact hat algebra (Dekle, Eaton and Kortum 2007), which absorbs unobserved productivities and amenities into baseline shares. Main parameters are σ = 5, κ = 1 (travel-time elasticity of trade), ε = 3, and a log-wage dispersion of 0.25 across upazilas with wages mapped from the RWI.
+The model (Redding 2016 class) has 544 upazilas producing CES traded varieties whose number is proportional to population (the agglomeration force), a local non-traded sector produced with local labor (expenditure share α_N = 0.30), housing in fixed supply (share 0.25), and Fréchet idiosyncratic location preferences with migration elasticity ε (the long run); the short run holds population fixed. Iceberg trade costs are a power function of bilateral road travel time, computed as a 544 × 544 matrix with and without the bridge. Baseline trade shares are calibrated by Sinkhorn matrix scaling so that sales equal income in every upazila; counterfactuals are solved in exact hat algebra (Dekle, Eaton and Kortum 2007), which absorbs unobserved productivities and amenities into baseline shares. Main parameters are σ = 5, κ = 1 (travel-time elasticity of trade), ε = 3, and a log-wage dispersion of 0.25 across upazilas with wages mapped from the RWI.
 
 ### 6.2 Welfare and incidence
 
@@ -210,11 +210,11 @@ By division (population-weighted; short-run real income / long-run population): 
 | Ferry 1.5 / 4 km/h | 0.55% / 0.31% | +3.0% / +1.7% |
 | Wage dispersion 0.15 / 0.35 | 0.47% / 0.48% | +2.4% / +2.8% |
 
-Three economic points follow. The gains are roughly proportional to the traded expenditure share: cheaper goods from elsewhere benefit only the 45% of spending on traded goods, and the local wage increase is partly offset by higher prices of local services (a Balassa–Samuelson-type effect), so the one-sector model overstates aggregate gains by about 70%. The gains are smaller than ex-ante projections because the model covers the goods-trade channel only, with no passenger time savings, commuting or access to services; the numbers are a lower bound. There are losers: Rajshahi and Rangpur lose through trade diversion as south-western producers become more competitive in Dhaka. Migration barely changes aggregate welfare but determines where the gains land.
+Three economic implications follow. The gains are roughly proportional to the traded expenditure share: cheaper goods from elsewhere benefit only the 45% of spending on traded goods, and the local wage increase is partly offset by higher prices of local services (a Balassa–Samuelson-type effect), so the one-sector model overstates aggregate gains by about 70%. The gains are smaller than ex-ante projections because the model covers the goods-trade channel only, with no passenger time savings, commuting or access to services; the numbers are a lower bound. Some regions lose: Rajshahi and Rangpur lose through trade diversion as southwestern producers become more competitive in Dhaka. Migration has little effect on aggregate welfare but determines where the gains accrue.
 
 ![Figure 5. Long-run population change, welfare gain across parameter values, the model-implied coefficient against the estimate, and power.](../outputs/figures/qse_padma.png)
 
-### 6.3 Does the null contradict the model?
+### 6.3 Reconciling the null with the model
 
 Long-run population changes are translated into built-up changes with a cross-sectional elasticity of built-up share with respect to population density (η = 1.33, SE 0.03). Regressing the implied change on upazila-mean D across the Padma region gives the coefficient the causal design *would* recover at full adjustment. A Bayesian layer draws 600 parameter vectors from priors (σ, κ, ε, α_N, wage dispersion, η, and the share of long-run adjustment completed by 2026), computes the implied coefficient for each, and reweights by the likelihood of the observed estimate. The same draws give the power of the empirical design.
 
@@ -224,9 +224,9 @@ With main parameters the model implies a built-up coefficient of 0.059 points pe
 
 1. **Geographic targeting.** Satellite wealth maps are fit for allocating resources across upazilas (out-of-area R² ≈ 0.83) but not within villages. Any such map should be validated with spatial-block, not random, cross-validation, and its reliance on the built environment should be stated.
 2. **Monitoring with remote sensing.** Report temporal-consistency diagnostics for any satellite-derived outcome used in a panel; the reliability of year-to-year change depends more on compositing design than on the classifier.
-3. **Corridor appraisal.** Do not read three to four years of built-up imagery as an early verdict on a transport investment. Pre-register the expected effect size from a calibrated model and the power of the evaluation design.
-4. **Incidence.** Appraisal models should include a non-traded sector and report gains and losses by region; the goods-trade channel alone gives a lower bound of about +0.5% nationally here, with losses in the north-west.
-5. **Urban land policy.** Growth in the six largest cities is predominantly edge expansion with flattening density gradients; fringe land-use planning and trunk infrastructure are where the margin of development lies.
+3. **Corridor appraisal.** Three to four years of built-up imagery should not be read as an early verdict on a transport investment. The expected effect size from a calibrated model, and the power of the evaluation design, should be pre-registered.
+4. **Incidence.** Appraisal models should include a non-traded sector and report gains and losses by region; the goods-trade channel alone gives a lower bound of about +0.5% nationally here, with losses in the northwest.
+5. **Urban land policy.** Growth in the six largest cities is predominantly edge expansion with flattening density gradients; fringe land-use planning and trunk infrastructure are the relevant policy margins.
 
 ## 8. Limitations and next steps
 
@@ -238,11 +238,11 @@ The pipeline is an open-source Python package (grid, STAC access, compositing, l
 
 **Reproduction check.** The pipeline was re-run from the raw data on a separate machine on 16 November 2026 for the six cities, the national composite and the wealth study (the Padma-region composites and the causal and model steps were not re-run). Classifier scores reproduced within 0.005 and the headline wealth R² within 0.003; across all feature sets the largest change was +0.05 (Sentinel-2 statistics alone). City growth reproduced within 2.0 percentage points. The re-run also showed that the orbit-aware gap fill described in Section 3.1 was not called by the published compositing script; it now is.
 
-The **Sub-District Indicator Atlas** (Appendix) reports, for each of the 544 upazilas: population and density, Relative Wealth Index, WorldCover built-up share, the modelled travel-time reduction to Dhaka from the bridge, a treatment flag, and the model's short-run wage and real-income changes and long-run population and real-income changes, with division summaries and maps.
+The **Sub-District Indicator Atlas** (Appendix) reports, for each of the 544 upazilas: population and density, Relative Wealth Index, WorldCover built-up share, the modeled travel-time reduction to Dhaka from the bridge, a treatment flag, and the model's short-run wage and real-income changes and long-run population and real-income changes, with division summaries and maps.
 
 ![Figure 6. Sub-district indicator atlas: six national maps.](atlas/atlas_maps.png)
 
-![Figure 7. South-west zoom: travel-time reduction, short-run real income and long-run population.](atlas/atlas_maps_southwest.png)
+![Figure 7. Southwest zoom: travel-time reduction, short-run real income and long-run population.](atlas/atlas_maps_southwest.png)
 
 ## References
 

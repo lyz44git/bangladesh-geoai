@@ -1,12 +1,13 @@
-# Can open satellite data evaluate a major transport investment? The Padma Bridge, Bangladesh
+# Evaluating a major transport investment with open satellite data: the Padma Bridge, Bangladesh
 
 [![tests](https://github.com/lyz44git/bangladesh-geoai/actions/workflows/tests.yml/badge.svg)](https://github.com/lyz44git/bangladesh-geoai/actions/workflows/tests.yml)
 
-**Short answer: it can measure, but four years in it cannot yet evaluate.** Free Sentinel-2 imagery measures built-up
-land well enough for city monitoring (F1 = 0.80) and predicts sub-district wealth well enough for geographic targeting
-(out-of-area R² = 0.83). Four years after the Padma Bridge opened, the same imagery shows no detectable change in
-built-up land. A calibrated spatial model explains why: the effect it predicts is one the evaluation design has only
-8–23% power to detect. The model puts the national welfare gain at +0.47%, concentrated in the south-west.
+**Summary.** Open satellite data are sufficient for measurement and monitoring, but four years after opening they cannot
+yet support an evaluation of the bridge. Free Sentinel-2 imagery measures built-up land accurately enough for city
+monitoring (F1 = 0.80) and predicts sub-district wealth accurately enough for geographic targeting (out-of-area
+R² = 0.83). Four years after the Padma Bridge opened, the same imagery shows no detectable change in built-up land. A
+calibrated spatial equilibrium model accounts for this result: the effect it predicts is one that the evaluation design
+has only 8–23% power to detect. The model places the national welfare gain at +0.47%, concentrated in the southwest.
 
 <img src="figures/figure1.png" alt="Four panels following the study's four steps: wealth-prediction accuracy by feature set; built-up growth in six cities; event study of the bridge's effect on built-up land; map of model-implied income change by upazila." width="100%">
 
@@ -20,25 +21,25 @@ bridge); inset, the same change against the reduction in travel time to Dhaka. D
 [`figures/make_figure1.py`](figures/make_figure1.py) from the committed result tables and the GADM 4.1 boundaries,
 which are not stored here.
 
-Full write-up: [`docs/TECHNICAL_REPORT_EN.md`](docs/TECHNICAL_REPORT_EN.md) · Indicator atlas for 544 upazilas:
+Technical report: [`docs/TECHNICAL_REPORT_EN.md`](docs/TECHNICAL_REPORT_EN.md) · Indicator atlas for 544 upazilas:
 [`docs/atlas/ATLAS.md`](docs/atlas/ATLAS.md)
 
-## The question
+## Research question and design
 
 The Padma Bridge, a 6.15 km road-rail bridge opened on 25 June 2022, replaced ferry crossings that often involved
-hours of queueing and connected the south-western divisions to Dhaka. Ex-ante appraisals projected national GDP gains
-above 1%. Household surveys that could check this arrive years later; satellite imagery is free, annual and covers
-every upazila. The study asks whether that imagery can support an early evaluation, in four steps, each a
-precondition for the next:
+hours of queuing and connected the southwestern divisions to Dhaka. Ex-ante appraisals projected national GDP gains
+above 1%. Household surveys that could test this projection become available only years later, whereas satellite
+imagery is free, annual and covers every upazila. The study examines whether such imagery can support an early
+evaluation, proceeding in four steps, each a precondition for the next:
 
 | Step | Question | Approach | Answer |
 |---|---|---|---|
 | 1. Measure | Is imagery accurate enough for annual measures of built-up land and wealth? | U-Net trained on WorldCover labels; wealth prediction under 50 km spatial-block cross-validation | Yes, for city monitoring and upazila-level targeting |
-| 2. Describe | What does it show where change is large? | Built-up area in the six largest cities, 2020–2026 | Growth of 27–72%, mostly at the urban edge |
-| 3. Evaluate | Did the bridge change where building happens? | Continuous-treatment difference-in-differences and event study, 34,626 cells × 7 seasons | No detectable effect once selection on trends is removed |
+| 2. Describe | What does it show where change is rapid? | Built-up area in the six largest cities, 2020–2026 | Growth of 27–72%, mostly at the urban edge |
+| 3. Evaluate | Did the bridge change where new built-up land appears? | Continuous-treatment difference-in-differences and event study, 34,626 cells × 7 seasons | No detectable effect once selection on trends is removed |
 | 4. Interpret | Is the null evidence that the bridge had no effect? | Two-sector spatial equilibrium model of 544 upazilas; power of the design against the model's prediction | No: 8–23% power; the model implies a welfare gain of +0.47% |
 
-## 1. Measurement is accurate enough for monitoring and targeting
+## 1. Measurement: accuracy is sufficient for monitoring and targeting
 
 | Built-up classifier, six cities pooled (spatially held-out blocks) | Precision | Recall | F1 |
 |---|---|---|---|
@@ -50,21 +51,22 @@ precondition for the next:
 | Spatial blocks (50 km) | 0.45 | 0.83 |
 | Random folds | 0.50 | 0.92 |
 
-- **Compositing matters more than the classifier for change over time.** Compared with least-cloudy compositing, the
+- **Compositing, more than the classifier, determines the stability of change over time.** Relative to least-cloudy
+  compositing, the
   phenology-balanced design lowers the year-to-year reversal rate by 25–52% and the trend-residual standard deviation
-  by 29–75% across the six cities. Without it, seasonal noise would be read as urban change and would contaminate the
-  event study in step 3.
-- **Accuracy falls where settlement is sparse.** In the rural Padma region (1.3% built-up) the U-Net reaches F1 = 0.66
+  by 29–75% across the six cities. Without it, seasonal variation would register as urban change and would
+  contaminate the event study in step 3.
+- **Accuracy declines where settlement is sparse.** In the rural Padma region (1.3% built-up) the U-Net reaches F1 = 0.66
   (precision 0.79, recall 0.56).
-- **Random cross-validation overstates wealth accuracy**; the spatial-block figures are the ones that apply to
+- **Random cross-validation overstates wealth accuracy**; the spatial-block figures are the relevant measure for
   out-of-area prediction. In the best imagery model, built-up land cover alone accounts for 31% of the gain.
 
-The wealth index also sets relative wages in the spatial model of step 4; the imagery model shows that this input
-can be largely reproduced from imagery out of area.
+The wealth index also sets relative wages in the spatial model of step 4; the imagery model indicates that this
+input can be largely reproduced from imagery out of area.
 
 ![Wealth predicted from imagery for 26,556 grid cells out of area; upazila means of prediction against label; accuracy by feature set under spatial-block and random cross-validation; year-to-year noise of built-up maps under two compositing designs](outputs/figures/measurement.png)
 
-## 2. Where change is large, cities grow at the edge
+## 2. Description: urban growth is concentrated at the edge
 
 | City | Built-up growth, 2020–2026 | Share of new built-up land at the edge |
 |---|---|---|
@@ -76,17 +78,17 @@ can be largely reproduced from imagery out of area.
 | Barishal | +72% | 61% |
 
 Edge expansion accounts for 50–64% of new built-up land, and radial density gradients flatten in every city with a
-measurable gradient. In Dhaka and Chattogram the largest additions lie 4–7 km from the centre. The cities add 4.0–9.5% to their built-up area each year. The rural areas the bridge reaches
-start from 0.37% built-up, so any bridge effect on built-up land is small in absolute terms, a fact that matters in
-step 4.
+measurable gradient. In Dhaka and Chattogram the largest additions lie 4–7 km from the center. Built-up area in the six cities grows by 4.0–9.5% a year. By contrast, the rural areas the
+bridge reaches start from 0.37% built-up, so any bridge effect on built-up land is necessarily small in absolute terms,
+which limits the power of the evaluation (step 4).
 
 ![Built-up land in 2020 and land added by 2026 in six cities, each with a 10 km scale bar](outputs/figures/urban_change_maps.png)
 
-![Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city centre; density gradients in 2020 and 2026](outputs/figures/urban_area_and_profiles.png)
+![Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city center; density gradients in 2020 and 2026](outputs/figures/urban_area_and_profiles.png)
 
-## 3. The bridge: no detectable effect on built-up land
+## 3. Evaluation: no detectable effect of the bridge on built-up land
 
-Treatment is the modelled reduction in travel time to Dhaka (log points), which varies continuously across 34,626
+Treatment is the modeled reduction in travel time to Dhaka (log points), which varies continuously across 34,626
 cells. Effect of a one-log-point reduction on built-up share (percentage points):
 
 | Specification | Coefficient | 95% CI | Randomization p |
@@ -96,20 +98,21 @@ cells. Effect of a one-log-point reduction on built-up share (percentage points)
 | (3) + division × year fixed effects | −0.002 | −0.13 to 0.12 | 0.98 |
 | (2) with district clusters | 0.060 | −0.11 to 0.23 | |
 
-- **The naive negative estimate is selection on trends.** Treated areas are far more rural (0.37% built-up before
+- **The negative naive estimate reflects selection on trends.** Treated areas are far more rural (0.37% built-up before
   opening against 2.22%) and add fewer percentage points each year. Controlling for trends by baseline density removes
   the pre-trends, and the estimate becomes a null.
 - **The null is robust** to ferry speed, the outcome definition, and dropping cells near the bridge or near Dhaka. A
   binary-treatment version of (2) is positive (0.097, CI 0.03 to 0.17) but does not survive district clustering or
   randomization inference.
 
-A null can mean that the bridge had no effect or that the test could not see one. Step 4 asks which.
+A null result is consistent either with no effect or with a test that lacks the power to detect one; step 4
+distinguishes between the two.
 
 ![Reduction in travel time to Dhaka on a 500 m grid; event-study estimates under three specifications; the coefficient under alternative choices](outputs/figures/padma_treatment_and_event_study.png)
 
-## 4. The null is uninformative; the model implies a gain of +0.47%
+## 4. Interpretation: the null is uninformative, and the model implies a gain of +0.47%
 
-- **The model's predicted effect sits inside the confidence interval.** At full long-run adjustment the model implies
+- **The model's predicted effect lies within the confidence interval.** At full long-run adjustment the model implies
   a built-up coefficient of 0.059, almost exactly the point estimate of 0.060.
 - **The design cannot detect an effect of that size.** Its power is 8–10% with district clustering and 17–23% with
   upazila clustering; 80% power would need a standard error about one-fifth of the district-clustered one.
@@ -156,7 +159,7 @@ A null can mean that the bridge had no effect or that the test could not see one
 | 4 | Power | `scripts/09_power.py` | Power of the causal design against the model-implied effect |
 | | Atlas and figures | `scripts/08_atlas.py`, `figures/` | Upazila indicator atlas; the figures in this README and the report |
 
-## Reproduce
+## Reproduction
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -186,8 +189,8 @@ rasters in `data/` for the wealth, travel-time and city maps, and falls back to 
 cities, the national composite and the wealth study (steps 1–2 and the travel-time model; the Padma-region composites
 and the causal and model steps were not re-run). Classifier scores reproduced within 0.005 and the headline wealth R²
 within 0.003; across all feature sets the largest change was +0.05 (Sentinel-2 statistics alone). City growth
-reproduced within 2.0 percentage points. The published tables are unchanged. The re-run also exposed two issues that are
-now fixed or documented:
+reproduced within 2.0 percentage points. The published tables are unchanged. The re-run also identified two issues, now
+fixed or documented:
 
 - `01_build_composites.py` now calls the orbit-aware gap filling (`composite.fill_gaps`) after each composite. Without
   it, eastern Khulna had no clear observation in 2026 and its built-up area was understated by more than half.
@@ -204,11 +207,11 @@ pytest -q
 17 offline unit tests cover the grid, compositing, labels, features, models, the fixed-effects estimators and the
 equilibrium solver (one needs PyTorch and is skipped without it). They run on every push.
 
-## Data and licences
+## Data and licenses
 
 All inputs are openly available. No data are stored in this repository; the scripts stream or download them.
 
-| Source | Use | Licence |
+| Source | Use | License |
 |---|---|---|
 | Sentinel-2 L2A (ESA/Copernicus), via AWS Open Data and the Earth Search STAC API | Annual dry-season composites, 2018–2026 | Copernicus Sentinel data terms (free use with attribution) |
 | ESA WorldCover 2020 and 2021, 10 m | Built-up training labels, land-cover shares, water mask | CC BY 4.0 |
@@ -229,10 +232,10 @@ GADM boundaries under its academic-use terms.
 **Use.** This is a non-commercial research project. The data and all derived outputs in this repository are used
 for research only.
 
-## Licence
+## License
 
-Code is released under the MIT licence (see `LICENSE`). The datasets and the derived outputs keep the terms listed
-under Data and licences.
+Code is released under the MIT License (see `LICENSE`). The datasets and the derived outputs keep the terms listed
+under Data and licenses.
 
 ## Notes
 
