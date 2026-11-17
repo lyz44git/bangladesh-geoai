@@ -90,7 +90,9 @@ standard deviation by 29–75% across the six cities, noise that would otherwise
 
 Growth is mostly edge expansion, and radial density gradients flatten in every city with a measurable gradient.
 
-![Built-up area index and radial profiles](outputs/figures/urban_area_and_profiles.png)
+![Built-up land in 2020 and land added by 2026 in six cities, each with a 10 km scale bar](outputs/figures/urban_change_maps.png)
+
+![Smoothed built-up area by city, density gradients in 2020 and 2026, and the share of pixels that flip back under two compositing methods](outputs/figures/urban_area_and_profiles.png)
 
 ### Wealth mapping
 
@@ -102,7 +104,7 @@ Growth is mostly edge expansion, and radial density gradients flatten in every c
 Random cross-validation overstates accuracy; the spatial-block figures are the ones to use for out-of-area
 prediction. Most of the predictive power comes from the built environment.
 
-![Wealth maps and accuracy by feature set](outputs/figures/wealth_maps_and_accuracy.png)
+![Relative Wealth Index by upazila; accuracy by feature set under spatial-block and random cross-validation; accuracy against a second poverty map; share of model gain by feature group](outputs/figures/wealth_maps_and_accuracy.png)
 
 ### The Padma Bridge: causal evidence
 
@@ -120,7 +122,7 @@ against 2.22%) and add fewer percentage points each year. Once baseline-density-
 pre-trends disappear and the effect is a null. A binary-treatment version of (2) is positive (0.097, CI 0.03 to 0.17)
 but does not survive district clustering or randomization inference.
 
-![Treatment intensity and event study](outputs/figures/padma_treatment_and_event_study.png)
+![Travel-time reduction to Dhaka by upazila; event-study estimates under three specifications; the coefficient under alternative choices](outputs/figures/padma_treatment_and_event_study.png)
 
 ### Structural incidence and power
 
@@ -133,7 +135,7 @@ but does not survive district clustering or randomization inference.
   estimate. Against that effect the causal design has 8–10% power with district clustering and 17–23% with upazila
   clustering, so the null is uninformative about welfare.
 
-![Model results: real income, population, welfare distribution and implied coefficient](outputs/figures/qse_padma.png)
+![Long-run population change by upazila; welfare gain across parameter values; model-implied coefficient against the estimate; power of the causal design](outputs/figures/qse_padma.png)
 
 ## Reproduce
 
@@ -156,6 +158,9 @@ python scripts/09_power.py                                    # reads committed 
 
 The pipeline runs on a four-CPU machine without a GPU. Raw data and intermediate rasters go to a git-ignored `data/`
 folder; result tables and figures are in `outputs/`.
+
+The figures in this README, the report and the atlas are drawn from the committed tables by
+`python figures/make_figure1.py` and `python figures/make_report_figures.py`; both need the GADM level-3 boundary file.
 
 ## Tests
 

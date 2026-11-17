@@ -37,7 +37,7 @@ Model-based columns are counterfactual simulations under stated parameters, not 
 
 ![South-west zoom](atlas_maps_southwest.png)
 
-Red star: Padma Bridge; black square: Dhaka.
+Black square: Padma Bridge.
 
 ## Largest modelled gains (top 20 upazilas by short-run real income change)
 

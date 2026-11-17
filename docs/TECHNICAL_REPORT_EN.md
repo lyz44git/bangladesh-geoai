@@ -124,7 +124,7 @@ This error is non-classical: it is correlated with season and weather, and there
 
 Edge expansion accounts for 50–64% of new built-up land, infill for 18–40% and outlying development for 9–18%; new development follows radial roads. Secondary cities grow faster than Dhaka, and density gradients flatten in every city where both years can be compared, consistent with suburbanisation in a monocentric framework (lower commuting costs or rising incomes; the data cannot separate the two). Because 10–20 m imagery cannot see vertical densification, Dhaka's +27% is a horizontal measure that understates growth in the core.
 
-![Figure 1. Built-up in 2020 (grey) and new built-up 2020–2026 (red), six cities.](../outputs/figures/urban_change_maps.png)
+![Figure 1. Built-up land in 2020 (dark) and land added 2020–2026 (orange), six cities.](../outputs/figures/urban_change_maps.png)
 
 ### 4.3 Wealth mapping
 
@@ -141,7 +141,7 @@ Edge expansion accounts for 50–64% of new built-up land, infill for 18–40% a
 
 Three findings matter for practice. First, the built environment carries most of the signal: land-cover shares alone explain 35% of cell-level variation and the WorldCover built share accounts for 31% of model gain, while location variables add only 0.03. Imagery-based wealth proxies are, to a large extent, urbanisation proxies. Second, random cross-validation overstates accuracy in unsurveyed areas by about 0.05 at cell level and 0.08–0.09 at upazila level; targeting applications face exactly this extrapolation problem. Third, aggregation to upazilas lifts accuracy above 0.8, which is usable for geographic targeting, whereas cell-level accuracy is not sufficient for within-village targeting. Against the independent survey-based 2011 poverty layer (Spearman 0.41 with the RWI), conclusions are unchanged (imagery + context: 0.47 cell, 0.81 upazila).
 
-![Figure 2. Wealth map and accuracy.](../outputs/figures/wealth_maps_and_accuracy.png)
+![Figure 2. Relative wealth by upazila, accuracy by feature set and validation scheme, and feature importance.](../outputs/figures/wealth_maps_and_accuracy.png)
 
 ### 4.4 The Padma Bridge: causal evidence
 
@@ -164,7 +164,7 @@ The negative coefficient in specification (1) is selection on trends: places wit
 
 The 2018–2019 archive cannot be used to extend the pre-period: it comes from a different processing baseline, pre-period coefficients jump to +1.9 to +2.8 points, and a placebo "opening in 2020" fails for measurement rather than identification reasons.
 
-![Figure 3. Treatment intensity and event-study estimates.](../outputs/figures/padma_treatment_and_event_study.png)
+![Figure 3. Travel-time reduction by upazila, event-study estimates and robustness of the coefficient.](../outputs/figures/padma_treatment_and_event_study.png)
 
 A specification error found during the work is worth recording: when baseline-built bins were first computed by ranking observations rather than cells, tied zero-built cells moved between bins across years and produced a spurious positive effect of +0.20 points (SE 0.08). Defining bins per cell removed it.
 
@@ -195,7 +195,7 @@ By division (population-weighted; short-run real income / long-run population): 
 
 Three economic points follow. The gains are roughly proportional to the traded expenditure share: cheaper goods from elsewhere benefit only the 45% of spending on traded goods, and the local wage increase is partly offset by higher prices of local services (a Balassa–Samuelson-type effect), so the one-sector model overstates aggregate gains by about 70%. The gains are smaller than ex-ante projections because the model covers the goods-trade channel only, with no passenger time savings, commuting or access to services; the numbers are a lower bound. There are losers: Rajshahi and Rangpur lose through trade diversion as south-western producers become more competitive in Dhaka. Migration barely changes aggregate welfare but determines where the gains land.
 
-![Figure 4. Short-run real income, long-run population, welfare distribution and the model-implied reduced-form coefficient.](../outputs/figures/qse_padma.png)
+![Figure 4. Long-run population change, welfare gain across parameter values, the model-implied coefficient against the estimate, and power.](../outputs/figures/qse_padma.png)
 
 ### 4.6 Does the null contradict the model?
 
