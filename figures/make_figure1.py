@@ -60,6 +60,42 @@ def letter(fig, ax, s, title, x=0.012):
     fig.text(x + 0.016, box.y1 + 0.022, title, fontsize=7.5, va="baseline")
 
 
+def key(ax, entries, loc="upper right", anchor=(1.0, 1.0), vertical=False, face="#f1f3f5", fontsize=6.3):
+    """Legend chip: a rounded, borderless box holding (handle, label) pairs.
+
+    A handle is a dict: {"color": c} draws a filled marker; "mfc"/"mec" style an open one;
+    {"kind": "line"} draws a line sample and {"kind": "patch"} a square. Anchored in axes coordinates.
+    """
+    from matplotlib.lines import Line2D
+    from matplotlib.offsetbox import AnchoredOffsetbox, DrawingArea, HPacker, TextArea, VPacker
+    from matplotlib.patches import Rectangle
+
+    items = []
+    for h, label in entries:
+        kind, col = h.get("kind", "marker"), h["color"]
+        da = DrawingArea(11 if kind == "line" else 8, 7, 0, 0)
+        if kind == "patch":
+            da.add_artist(Rectangle((1.2, 0.7), 5.6, 5.6, fc=col, ec="none"))
+        elif kind == "line":
+            da.add_artist(Line2D([0.5, 10.5], [3.5, 3.5], color=col, lw=h.get("lw", 1.3), ls=h.get("ls", "-"),
+                                 solid_capstyle="round"))
+        elif kind == "bar":
+            da.add_artist(Line2D([4, 4], [0.3, 6.7], color=col, lw=1.3, solid_capstyle="butt"))
+        else:
+            da.add_artist(Line2D([4], [3.5], marker=h.get("marker", "o"), ms=h.get("ms", 4.2), mfc=h.get("mfc", col),
+                                 mec=h.get("mec", col), mew=h.get("mew", 1.0), ls="none"))
+        items.append(HPacker(children=[da, TextArea(label, textprops=dict(fontsize=fontsize, color=INK))],
+                             align="center", pad=0, sep=1.5))
+    pack = (VPacker(children=items, align="left", pad=0, sep=2.5) if vertical
+            else HPacker(children=items, align="center", pad=0, sep=7))
+    box = AnchoredOffsetbox(loc=loc, child=pack, pad=0.45, borderpad=0, frameon=True, bbox_to_anchor=anchor,
+                            bbox_transform=ax.transAxes, prop=dict(size=fontsize))
+    box.patch.set(boxstyle="round,pad=0,rounding_size=0.55", facecolor=face, edgecolor="none")
+    box.set_zorder(6)
+    ax.add_artist(box)
+    return box
+
+
 def leader(ax, xy, xytext, text, **kw):
     ax.annotate(text, xy=xy, xytext=xytext, fontsize=6.5, va="center",
                 arrowprops=dict(arrowstyle="-", lw=0.5, color=AXIS, shrinkA=1.5, shrinkB=2), **kw)
@@ -121,7 +157,7 @@ def draw():
     E = [r for r in rows(TB / "padma_event_study.csv") if r["sample"].startswith("2020-2026")]
     b.axhline(0, color=AXIS, lw=0.5)
     b.axvline(2022.5, color=INK2, lw=0.6, ls=(0, (3, 3)))
-    b.text(2022.56, -1.85, "bridge opens", fontsize=6.5, color=INK2, va="center")
+    b.text(2022.56, 0.56, "bridge opens", fontsize=6.5, color=INK2, va="center")
     series = {}
     for spec, col in (("(1)", RED), ("(2)", BLUE)):
         pts = sorted([(int(r["year"]), float(r["coef"]), float(r["ci_lo"]), float(r["ci_hi"]))
@@ -130,33 +166,37 @@ def draw():
         b.fill_between(x, [p[2] for p in pts], [p[3] for p in pts], color=col, alpha=0.16, lw=0)
         b.plot(x, [p[1] for p in pts], color=col, lw=1.2, marker="o", ms=3, mfc="white", mew=1.0)
         series[spec] = pts
-    leader(b, (2021, series["(1)"][1][1]), (2020.05, -1.45), "Naive: cell and\nyear fixed effects", linespacing=1.1)
-    leader(b, (2024, series["(2)"][-3][1]), (2022.65, 0.56), "Baseline-density trends controlled", ha="left")
+    key(b, [({"kind": "line", "color": RED}, "cell and year fixed effects only"),
+            ({"kind": "line", "color": BLUE}, "trends by baseline density controlled")], loc="lower left",
+        anchor=(0.03, 0.03), vertical=True)
     b.set_xlim(2019.85, 2026.15); b.set_ylim(-2.0, 0.7); b.set_xticks(range(2020, 2027)); b.set_yticks([-2, -1, 0])
     b.set_ylabel("Built-up share\n(pp per log point)")
     detach(b); letter(fig, b, "c", "No detectable effect of the bridge (power 8–23%)")
 
-    # ---- c: wealth prediction by feature set, spatial-block against random cross-validation
+    # ---- a: accuracy of the two measures on held-out areas: built-up land (F1) and upazila wealth (R2)
+    Bm = {r["model"]: float(r["f1"]) for r in rows(TB / "builtup_model_comparison_cities.csv") if r["aoi"] == "pooled"}
     Wr = [r for r in rows(TB / "wealth_prediction_results.csv") if r["target"] == "rwi"]
-    names = {"context only: pop+travel time (gbm)": "Pop. + travel time", "landcover (gbm)": "Land cover",
-             "s2_stats+landcover (gbm)": "S2 + land cover", "imagery + context (gbm)": "Imagery + context"}
     sp = {r["features"]: float(r["r2_upazila"]) for r in Wr if r["cv"].startswith("spatial")}
     rd = {r["features"]: float(r["r2_upazila"]) for r in Wr if r["cv"] == "random"}
-    order = sorted(names, key=lambda k: sp[k])
-    for i, k in enumerate(order):
-        c.plot([sp[k], rd[k]], [i, i], color="#d9dde1", lw=2.6, solid_capstyle="round", zorder=1)
-        c.plot(rd[k], i, marker="o", ms=4.4, mfc="white", mec=GREY, mew=1.0, zorder=2)
-        c.plot(sp[k], i, marker="o", ms=5, color=BLUE, zorder=3)
-        c.text(sp[k] - 0.016, i, f"{sp[k]:.2f}", ha="right", va="center", fontsize=6.5,
-               fontweight="bold" if i == len(order) - 1 else "normal")
-    top = len(order) - 1
-    leader(c, (sp[order[0]], 0), (0.405, 1.62), "50 km spatial-\nblock CV", linespacing=1.1, ha="left")
-    leader(c, (rd[order[0]], 0), (0.52, 0.0), "random CV", ha="left")
-    c.set_yticks(range(len(order)), [names[k] for k in order]); c.tick_params(axis="y", length=0)
-    c.set_xlim(0.38, 0.95); c.set_ylim(-0.55, top + 0.55); c.set_xticks([0.4, 0.6, 0.8])
-    c.set_xlabel("Out-of-sample R², upazila wealth", labelpad=2)
+    best, ctx = "imagery + context (gbm)", "context only: pop+travel time (gbm)"
+    #        y, label, held-out value, random-fold value, emphasised
+    spec = [(4.0, "U-Net", Bm["unet"], None, True), (3.0, "Gradient boosting", Bm["gbm"], None, False),
+            (1.0, "Imagery + context", sp[best], rd[best], True), (0.0, "Pop. + travel time", sp[ctx], rd[ctx], False)]
+    for y, name, v, r, strong in spec:
+        if r is not None:
+            c.plot([v, r], [y, y], color="#d9dde1", lw=2.6, solid_capstyle="round", zorder=1)
+            c.plot(r, y, marker="o", ms=4.4, mfc="white", mec=GREY, mew=1.0, zorder=2)
+        c.plot(v, y, marker="o", ms=5, color=BLUE if strong else "#8fb8d6", zorder=3)
+        c.text(v - 0.016, y, f"{v:.2f}", ha="right", va="center", fontsize=6.5, fontweight="bold" if strong else "normal")
+    for y, head in ((4.72, "Built-up land, F1 against WorldCover"), (1.72, "Upazila wealth, R² against the wealth index")):
+        c.text(0.385, y, head, fontsize=6.3, color=INK2, va="center")
+    key(c, [({"color": BLUE}, "held-out areas"), ({"color": GREY, "mfc": "white"}, "random folds")],
+        loc="lower right", anchor=(1.0, 0.0))
+    c.set_yticks([y for y, *_ in spec], [n for _, n, *_ in spec]); c.tick_params(axis="y", length=0)
+    c.set_xlim(0.38, 0.95); c.set_ylim(-0.6, 5.15); c.set_xticks([0.4, 0.6, 0.8])
+    c.set_xlabel("Accuracy on held-out areas", labelpad=2)
     c.spines["left"].set_visible(False); c.spines["bottom"].set_position(("outward", 3))
-    letter(fig, c, "a", "Imagery predicts upazila wealth (out-of-area R² = 0.83)")
+    letter(fig, c, "a", "Out-of-area accuracy: built-up F1 = 0.80, wealth R² = 0.83")
 
     # ---- d: built-up growth by city and where the new building is
     U0 = sorted(rows(TB / "urban_expansion_summary.csv"), key=lambda r: float(r["growth_pct"]))
@@ -164,15 +204,15 @@ def draw():
              ("new_built_outlying", "outlying", "#c9ced3"))
     for i, r in enumerate(U0):
         gr, left = float(r["growth_pct"]), 0.0
-        for key, name, col in parts:
-            w = gr * float(r[key])
+        for field, name, col in parts:
+            w = gr * float(r[field])
             d.barh(i, w, left=left, height=0.66, color=col, edgecolor="white", lw=0.7)
-            if i == len(U0) - 1:
-                d.text(left + w / 2, i + 0.62, name, ha="center", va="bottom", fontsize=6.3, color=INK2)
             left += w
         d.text(gr + 1.2, i, f"+{gr:.0f}%", va="center", fontsize=6.5)
     d.set_yticks(range(len(U0)), [r["city"].title() for r in U0]); d.tick_params(axis="y", length=0)
-    d.set_xlim(0, 82); d.set_ylim(-0.6, len(U0) + 0.25); d.set_xticks([0, 20, 40, 60, 80])
+    key(d, [({"kind": "patch", "color": col}, name) for _, name, col in parts], loc="center right", anchor=(1.0, 0.42),
+        vertical=True)
+    d.set_xlim(0, 82); d.set_ylim(-0.6, len(U0) - 0.4); d.set_xticks([0, 20, 40, 60, 80])
     d.set_xlabel("Growth in built-up area, 2020–2026 (%)", labelpad=2)
     d.spines["left"].set_visible(False); d.spines["bottom"].set_position(("outward", 3))
     letter(fig, d, "b", "Built-up area grew 27–72% in six cities, mostly at the edge")

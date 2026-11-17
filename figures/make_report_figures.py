@@ -26,7 +26,7 @@ from matplotlib.colors import LinearSegmentedColormap, LogNorm, Normalize, TwoSl
 
 sys.path.insert(0, str(Path(__file__).parent))
 from make_figure1 import (AXIS, BLUE, BRIDGE, GADM3, GREEN, GREY, INCOME, INK, INK2, PLACES, RED, ROOT, SEA, TB,  # noqa: E402
-                          detach, leader, rows, style)
+                          detach, key, leader, rows, style)
 
 FIG = ROOT / "outputs" / "figures"
 DATA = Path(os.environ.get("GEOAI_DATA", ROOT / "data"))
@@ -267,9 +267,9 @@ def padma(M):
         b.fill_between(x, [p[2] for p in pts], [p[3] for p in pts], color=col, alpha=0.14, lw=0)
         b.plot(x, [p[1] for p in pts], color=col, lw=1.1, marker="o", ms=2.8, mfc="white", mew=0.9)
         P[spec] = dict((p[0], p[1]) for p in pts)
-    leader(b, (2025, P["(1)"][2025]), (2022.75, -1.75), "(1) cell and year FE", ha="left")
-    leader(b, (2025, P["(2)"][2025]), (2022.75, 2.6), "(2) + baseline-density trends", ha="left")
-    leader(b, (2021, P["(3)"][2021]), (2019.75, 1.5), "(3) + division × year", ha="left")
+    key(b, [({"kind": "line", "color": RED}, "(1) cell and year FE"),
+            ({"kind": "line", "color": BLUE}, "(2) + density trends"),
+            ({"kind": "line", "color": GREEN}, "(3) + division × year")], loc="upper right", anchor=(1.0, 0.86), vertical=True)
     b.set_xlim(2017.7, 2026.2); b.set_ylim(-2.2, 4.7); b.set_xticks(range(2018, 2027, 2)); b.set_yticks([-2, 0, 2])
     b.set_ylabel("Built-up share\n(pp per log point)")
     detach(b); panel(fig, b, "b", "Pre-trends are absent once density trends are controlled", dx=-0.103)
@@ -295,44 +295,84 @@ def padma(M):
         c.plot([float(r["ci_lo"]), float(r["ci_hi"])], [y, y], color=col, lw=1.1, solid_capstyle="round")
         c.plot(float(r["coef"]), y, marker="o", ms=4, mfc=col if i < 4 else "white", mec=col, mew=1.0)
     c.set_yticks(range(len(order)), [o[1] for o in order][::-1])
+    key(c, [({"color": BLUE}, "main"), ({"color": GREY, "mfc": "white"}, "variant of (2)")], loc="lower left",
+        anchor=(0.0, 0.0), vertical=True)
     c.set_xlim(-0.62, 0.30); c.set_ylim(-0.6, len(order) - 0.4); c.set_xticks([-0.6, -0.3, 0, 0.3])
     c.set_xlabel("Effect on built-up share (pp per log point)", labelpad=2, x=0.2)
     rowaxis(c); panel(fig, c, "c", "The null is robust to alternative specifications (95% CI)", dx=-0.223)
     fig.savefig(FIG / "padma_treatment_and_event_study.png", dpi=300)
 
 
-# ------------------------------------------------------------------ step 4: incidence, sensitivity, detectability
+# ------------------------------------------------------------------ step 4: detectability, welfare, incidence
 def model(M):
+    from matplotlib.patches import ConnectionPatch
+
     fig = plt.figure(figsize=(7.2, 5.0), dpi=300)
     C = json.loads((TB / "qse_calibration.json").read_text())
     B = json.loads((TB / "qse_padma_bayes.json").read_text())
     Pw = json.loads((TB / "padma_power.json").read_text())
-    a = fig.add_axes([0.012, 0.03, 0.465, 0.905])
-    norm = TwoSlopeNorm(vmin=-2, vcenter=0, vmax=8)
-    M.draw(a, "population_lr_pct", INCOME, norm, places=PLACES, bridge=True, lw=0.15)
-    a.annotate("Padma\nBridge", xy=BRIDGE, xytext=(87.98, 23.3), fontsize=6.5, va="center", linespacing=1.15,
-               arrowprops=dict(arrowstyle="-|>", lw=0.6, color=INK, shrinkB=2.5, mutation_scale=6))
-    M.bar(fig, a, INCOME, norm, "Long-run population change (%)", [-2, 0, 2, 4, 6, 8], extend="max")
-    a.text(0.05, 0.022, f'Treated upazilas +{C["main"]["pop_lr_treated_pct"]:.1f}%; largest '
-           f'+{C["main"]["pop_lr_max_upazila_pct"]:.0f}%', transform=a.transAxes, fontsize=6.5, color=INK2)
-    fig.text(0.012, 0.957, "a", fontsize=8, fontweight="bold", va="baseline")
-    fig.text(0.028, 0.957, "Model-implied long-run population change", fontsize=7.5, va="baseline")
-
-    # inset: who gains, by wealth fifth of the population (short-run real income, model)
     I = json.loads((TB / "qse_incidence.json").read_text())
-    ins = a.inset_axes([0.585, 0.835, 0.37, 0.125])
-    ins.set_facecolor("none")
-    fifths = [f["real_income_sr_pct"] for f in I["wealth_fifths"]]
-    ins.bar(range(1, 6), fifths, width=0.68, color=[BLUE if v == max(fifths) else SKY for v in fifths])
-    for k, v in enumerate(fifths, 1):
-        ins.text(k, v + 0.025, f"{v:.2f}", ha="center", va="bottom", fontsize=6)
-    ins.set_xticks([1, 5], ["poorest fifth", "richest"]); ins.set_yticks([0, 0.5]); ins.set_ylim(0, 0.78)
-    ins.tick_params(labelsize=6, length=1.8, pad=1.5)
-    ins.set_title("Income gain by wealth fifth (%)", fontsize=6.5, loc="left", pad=3)
-    detach(ins)
 
-    # b: welfare gain under alternative parameter values
-    b = fig.add_axes([0.685, 0.665, 0.30, 0.27])
+    # a: the model-implied effect in a typical treated cell, in pixels (schematic, with an enlarged window)
+    tc = Pw["typical_treated_cell"]
+    n = int(round(tc["pixels_per_cell"] ** 0.5))
+    hamlet = [(19, 17), (19, 18), (20, 18), (20, 19), (21, 19), (21, 20)][: int(round(tc["baseline_built_pixels"]))]
+    side = tc["model_implied_effect_pixels"] ** 0.5
+    grid = np.zeros((n, n))
+    for r_, c_ in hamlet:
+        grid[r_, c_] = 1
+    cell_cmap = LinearSegmentedColormap.from_list("cell", [C_BG, C_OLD])
+    w0, z0, z1, y0 = 0.128, 15, 25, 0.742
+    a = fig.add_axes([0.03, y0, w0, w0 * 7.2 / 5.0])
+    zo = fig.add_axes([0.192, y0, w0, w0 * 7.2 / 5.0])
+    for ax, lo, hi, step, lw in ((a, 0, n, 5, 0.3), (zo, z0, z1, 1, 0.5)):
+        ax.imshow(grid, cmap=cell_cmap, vmin=0, vmax=1, extent=(0, n, n, 0), interpolation="nearest")
+        for g_ in range(lo, hi + 1, step):
+            ax.axhline(g_, color="white", lw=lw); ax.axvline(g_, color="white", lw=lw)
+        ax.add_patch(plt.Rectangle((21, 21), side, side, color=C_NEW, lw=0, zorder=3))
+        ax.set_xlim(lo, hi); ax.set_ylim(hi, lo); ax.set_xticks([]); ax.set_yticks([])
+        for sp in ax.spines.values():
+            sp.set_color("#aeb4ba"); sp.set_linewidth(0.6)
+    a.add_patch(plt.Rectangle((z0, z0), z1 - z0, z1 - z0, fill=False, ec=INK, lw=0.6, zorder=4))
+    for ya in (z0, z1):  # zoom guides from the window in the full cell to the enlarged view
+        fig.add_artist(ConnectionPatch(xyA=(z1, ya), coordsA=a.transData, xyB=(z0, ya), coordsB=zo.transData,
+                                       color=INK2, lw=0.4))
+    a.text(n / 2, n + 1.8, f'1.2 km cell, {tc["pixels_per_cell"]:,} pixels', fontsize=6, ha="center", va="top", color=INK2)
+    zo.text((z0 + z1) / 2, z1 + 0.45, "enlarged 4× (schematic)", fontsize=6, ha="center", va="top", color=INK2)
+    fig.text(0.012, 0.957, "a", fontsize=8, fontweight="bold", va="baseline")
+    fig.text(0.028, 0.957, "Model-implied effect in a typical treated cell: 0.4 of one pixel", fontsize=7.5, va="baseline")
+    tx, ty = 0.352, zo.get_position().y1 - 0.03
+    blocks = [(C_OLD, "Built-up before", f'{tc["baseline_built_pp"]:.2f}% of the cell,', f'about {tc["baseline_built_pixels"]:.0f} pixels'),
+              (C_NEW, "Model implies", f'+{tc["model_implied_effect_pp"]:.3f} pp, about', f'{tc["model_implied_effect_pixels"]:.1f} of one pixel')]
+    for k, (col, head, l1, l2) in enumerate(blocks):
+        yb = ty - k * 0.092
+        fig.add_artist(plt.Rectangle((tx - 0.014, yb - 0.001), 0.0075, 0.0075 * 7.2 / 5.0, transform=fig.transFigure,
+                                     color=col, lw=0))
+        fig.text(tx, yb, head, fontsize=6.5, va="baseline", fontweight="bold")
+        fig.text(tx, yb - 0.024, l1, fontsize=6.5, va="baseline")
+        fig.text(tx, yb - 0.048, l2, fontsize=6.5, va="baseline")
+
+    # b: what the model implies, what was estimated, and the minimum detectable effect of the design
+    b = fig.add_axes([0.205, 0.455, 0.265, 0.155])
+    est, se = C["rf_coef"], Pw["standard_errors"]
+    mde, ratio = Pw["minimum_detectable_effect_80pct_power"], Pw["mde_relative_to_model_effect"]
+    q = B["implied_rf_coef"]
+    b.axvline(0, color=AXIS, lw=0.5)
+    b.plot([q["post_p05"], q["post_p95"]], [2, 2], color=RED, lw=2.4, solid_capstyle="round")
+    b.plot(C["main"]["implied_rf_coef"], 2, marker="o", ms=4.6, mfc="white", mec=RED, mew=1.1)
+    for y, k in ((1, "upazila clusters"), (0, "district clusters")):
+        b.plot([est - 1.96 * se[k], est + 1.96 * se[k]], [y, y], color=BLUE, lw=1.1, solid_capstyle="round")
+        b.plot(est, y, marker="o", ms=4.4, color=BLUE)
+        b.plot([mde[k]] * 2, [y - 0.3, y + 0.3], color=INK, lw=1.3, solid_capstyle="butt")
+        b.text(max(mde[k], est + 1.96 * se[k]) + 0.012, y, f"{ratio[k]:.1f}×", va="center", fontsize=6.5)
+    key(b, [({"kind": "bar", "color": INK}, "minimum detectable effect")], loc="upper right", anchor=(1.0, 1.0))
+    b.set_yticks([2, 1, 0], ["Model implies", "Estimate, upazila clusters", "Estimate, district clusters"])
+    b.set_xlim(-0.14, 0.32); b.set_ylim(-0.55, 3.45); b.set_xticks([-0.1, 0, 0.1, 0.2, 0.3])
+    b.set_xlabel("Built-up share (pp per log point)", labelpad=2)
+    rowaxis(b); panel(fig, b, "b", "Minimum detectable effect: 2–4 times the model-implied effect", dx=-0.193)
+
+    # c: welfare gain under alternative parameter values
+    c = fig.add_axes([0.205, 0.085, 0.265, 0.25])
     S = rows(TB / "qse_padma_sensitivity.csv")
     main = float(S[0]["welfare_sr_pct"])
     labels = {"alpha_N": "Non-traded share", "ferry": "Ferry speed (km/h)", "kappa": "Trade-cost elasticity",
@@ -342,78 +382,42 @@ def model(M):
         groups.setdefault(r["varied"], []).append((float(r["value"]), float(r["welfare_lr_pct" if r["varied"] == "eps"
                                                                               else "welfare_sr_pct"])))
     order = sorted(groups, key=lambda k: max(v for _, v in groups[k]) - min(v for _, v in groups[k]))
-    b.axvline(main, color=INK2, lw=0.6, ls=(0, (3, 3)))
+    c.axvline(main, color=INK2, lw=0.6, ls=(0, (3, 3)))
     for i, k in enumerate(order):
         pts = sorted(groups[k], key=lambda t: t[1])
-        b.plot([pts[0][1], pts[-1][1]], [i, i], color=TRACK, lw=2.6, solid_capstyle="round", zorder=1)
+        c.plot([pts[0][1], pts[-1][1]], [i, i], color=TRACK, lw=2.6, solid_capstyle="round", zorder=1)
         for val, w in pts:
-            b.plot(w, i, marker="o", ms=4.4, color=BLUE, zorder=3)
+            c.plot(w, i, marker="o", ms=4.4, color=BLUE, zorder=3)
         if pts[-1][1] - pts[0][1] > 0.05:
-            b.text(pts[0][1] - 0.022, i, f"{pts[0][0]:g}", ha="right", va="center", fontsize=6.3, color=INK2)
-            b.text(pts[-1][1] + 0.022, i, f"{pts[-1][0]:g}", ha="left", va="center", fontsize=6.3, color=INK2)
-    b.text(main + 0.012, len(order) - 0.42, f"main {main:.2f}%", fontsize=6.5, color=INK2, va="bottom")
-    b.set_yticks(range(len(order)), [labels[k] for k in order])
-    b.set_xlim(0.2, 0.9); b.set_ylim(-0.55, len(order) - 0.1); b.set_xticks([0.2, 0.4, 0.6, 0.8])
-    b.set_xlabel("National welfare gain (%)", labelpad=2)
-    rowaxis(b); panel(fig, b, "b", "Welfare gain 0.30–0.79% across parameter values", dx=-0.188)
+            c.text(pts[0][1] - 0.022, i, f"{pts[0][0]:g}", ha="right", va="center", fontsize=6.3, color=INK2)
+            c.text(pts[-1][1] + 0.022, i, f"{pts[-1][0]:g}", ha="left", va="center", fontsize=6.3, color=INK2)
+    c.text(main + 0.012, len(order) - 0.42, f"main {main:.2f}%", fontsize=6.5, color=INK2, va="bottom")
+    c.set_yticks(range(len(order)), [labels[k] for k in order])
+    c.set_xlim(0.2, 0.9); c.set_ylim(-0.55, len(order) - 0.1); c.set_xticks([0.2, 0.4, 0.6, 0.8])
+    c.set_xlabel("National welfare gain (%)", labelpad=2)
+    rowaxis(c); panel(fig, c, "c", "Welfare gain of 0.30–0.79% across parameter values", dx=-0.193)
 
-    # c: what the model implies, what was estimated, and the smallest effect the design could detect
-    c = fig.add_axes([0.685, 0.40, 0.30, 0.125])
-    est, se = C["rf_coef"], Pw["standard_errors"]
-    mde, ratio = Pw["minimum_detectable_effect_80pct_power"], Pw["mde_relative_to_model_effect"]
-    q = B["implied_rf_coef"]
-    c.axvline(0, color=AXIS, lw=0.5)
-    c.plot([q["post_p05"], q["post_p95"]], [2, 2], color=RED, lw=2.4, solid_capstyle="round")
-    c.plot(C["main"]["implied_rf_coef"], 2, marker="o", ms=4.6, mfc="white", mec=RED, mew=1.1)
-    for y, k in ((1, "upazila clusters"), (0, "district clusters")):
-        c.plot([est - 1.96 * se[k], est + 1.96 * se[k]], [y, y], color=BLUE, lw=1.1, solid_capstyle="round")
-        c.plot(est, y, marker="o", ms=4.4, color=BLUE)
-        c.plot([mde[k]] * 2, [y - 0.3, y + 0.3], color=INK, lw=1.3, solid_capstyle="butt")
-        c.text(max(mde[k], est + 1.96 * se[k]) + 0.012, y, f"{ratio[k]:.1f}× model", va="center", fontsize=6.5)
-    c.set_yticks([2, 1, 0], ["Model implies", "Estimate, upazila clusters", "Estimate, district clusters"])
-    c.set_xlim(-0.14, 0.37); c.set_ylim(-0.55, 2.5); c.set_xticks([-0.1, 0, 0.1, 0.2, 0.3])
-    c.set_xlabel("Built-up share (pp per log point)", labelpad=2)
-    rowaxis(c); panel(fig, c, "c", "Minimum detectable effect (bar): 2–4 times the model-implied effect", dx=-0.188)
-
-    # d: the model-implied effect in a typical treated cell, in pixels (schematic, with an enlarged window)
-    tc = Pw["typical_treated_cell"]
-    n = int(round(tc["pixels_per_cell"] ** 0.5))
-    hamlet = [(19, 17), (19, 18), (20, 18), (20, 19), (21, 19), (21, 20)][: int(round(tc["baseline_built_pixels"]))]
-    side = tc["model_implied_effect_pixels"] ** 0.5
-    grid = np.zeros((n, n))
-    for r_, c_ in hamlet:
-        grid[r_, c_] = 1
-    cell_cmap = LinearSegmentedColormap.from_list("cell", [C_BG, C_OLD])
-    w0, z0, z1 = 0.135, 15, 25  # panel width (figure fraction); enlarged window in pixel coordinates
-    d = fig.add_axes([0.535, 0.04, w0, w0 * 7.2 / 5.0])
-    zo = fig.add_axes([0.705, 0.04, w0, w0 * 7.2 / 5.0])
-    for ax, lo, hi, step, lw in ((d, 0, n, 5, 0.3), (zo, z0, z1, 1, 0.5)):
-        ax.imshow(grid, cmap=cell_cmap, vmin=0, vmax=1, extent=(0, n, n, 0), interpolation="nearest")
-        for g_ in range(lo, hi + 1, step):
-            ax.axhline(g_, color="white", lw=lw); ax.axvline(g_, color="white", lw=lw)
-        ax.add_patch(plt.Rectangle((21, 21), side, side, color=C_NEW, lw=0, zorder=3))
-        ax.set_xlim(lo, hi); ax.set_ylim(hi, lo); ax.set_xticks([]); ax.set_yticks([])
-        for sp in ax.spines.values():
-            sp.set_color("#aeb4ba"); sp.set_linewidth(0.6)
-    d.add_patch(plt.Rectangle((z0, z0), z1 - z0, z1 - z0, fill=False, ec=INK, lw=0.6, zorder=4))
-    from matplotlib.patches import ConnectionPatch
-    for ya in (z0, z1):  # zoom guides from the window in the full cell to the enlarged view
-        fig.add_artist(ConnectionPatch(xyA=(z1, ya), coordsA=d.transData, xyB=(z0, ya), coordsB=zo.transData,
-                                       color=INK2, lw=0.4))
-    d.text(n / 2, n + 1.8, f'1.2 km cell, {tc["pixels_per_cell"]:,} pixels', fontsize=6, ha="center", va="top",
-           color=INK2)
-    zo.text((z0 + z1) / 2, z1 + 0.45, "enlarged 4× (schematic)", fontsize=6, ha="center", va="top", color=INK2)
-    panel(fig, d, "d", "Model-implied effect in a typical treated cell: 0.4 of one pixel", dx=-0.038)
-    tx, ty = 0.872, zo.get_position().y1 - 0.03
-    blocks = [(C_OLD, "Built-up before", f'{tc["baseline_built_pp"]:.2f}% of the cell,', f'about {tc["baseline_built_pixels"]:.0f} pixels'),
-              (C_NEW, "Model implies", f'+{tc["model_implied_effect_pp"]:.3f} pp, about', f'{tc["model_implied_effect_pixels"]:.1f} of one pixel')]
-    for k, (col, head, l1, l2) in enumerate(blocks):
-        y0 = ty - k * 0.092
-        fig.add_artist(plt.Rectangle((tx - 0.014, y0 - 0.001), 0.0075, 0.0075 * 7.2 / 5.0, transform=fig.transFigure,
-                                     color=col, lw=0))
-        fig.text(tx, y0, head, fontsize=6.5, va="baseline", fontweight="bold")
-        fig.text(tx, y0 - 0.024, l1, fontsize=6.5, va="baseline")
-        fig.text(tx, y0 - 0.048, l2, fontsize=6.5, va="baseline")
+    # d: where population moves in the long run, with the incidence of income gains by wealth fifth
+    d = fig.add_axes([0.515, 0.03, 0.475, 0.905])
+    norm = TwoSlopeNorm(vmin=-2, vcenter=0, vmax=8)
+    M.draw(d, "population_lr_pct", INCOME, norm, places=PLACES, bridge=True, lw=0.15)
+    d.annotate("Padma\nBridge", xy=BRIDGE, xytext=(87.98, 23.3), fontsize=6.5, va="center", linespacing=1.15,
+               arrowprops=dict(arrowstyle="-|>", lw=0.6, color=INK, shrinkB=2.5, mutation_scale=6))
+    M.bar(fig, d, INCOME, norm, "Long-run population change (%)", [-2, 0, 2, 4, 6, 8], extend="max")
+    d.text(0.05, 0.022, f'Treated upazilas +{C["main"]["pop_lr_treated_pct"]:.1f}%; largest '
+           f'+{C["main"]["pop_lr_max_upazila_pct"]:.0f}%', transform=d.transAxes, fontsize=6.5, color=INK2)
+    ins = d.inset_axes([0.585, 0.835, 0.37, 0.125])
+    ins.set_facecolor("none")
+    fifths = [f["real_income_sr_pct"] for f in I["wealth_fifths"]]
+    ins.bar(range(1, 6), fifths, width=0.68, color=[BLUE if v == max(fifths) else SKY for v in fifths])
+    for k, v in enumerate(fifths, 1):
+        ins.text(k, v + 0.025, f"{v:.2f}", ha="center", va="bottom", fontsize=6)
+    ins.set_xticks([1, 5], ["poorest fifth", "richest"]); ins.set_yticks([0, 0.5]); ins.set_ylim(0, 0.78)
+    ins.tick_params(labelsize=6, length=1.8, pad=1.5)
+    ins.set_title("Income gain by wealth fifth (%)", fontsize=6.5, loc="left", pad=3)
+    detach(ins)
+    fig.text(0.515, 0.957, "d", fontsize=8, fontweight="bold", va="baseline")
+    fig.text(0.531, 0.957, "Model-implied long-run population change and incidence", fontsize=7.5, va="baseline")
     fig.savefig(FIG / "qse_padma.png", dpi=300)
 
 
@@ -422,26 +426,38 @@ def measurement(M):
     import pandas as pd
 
     fig = plt.figure(figsize=(7.2, 5.0), dpi=300)
-    a = fig.add_axes([0.012, 0.03, 0.465, 0.905])
-    norm = Normalize(-0.6, 1.2)
-    P = DATA / "wealth" / "predictions.parquet"
-    pts = pd.read_parquet(P) if P.exists() else None
-    if pts is not None:
-        M.base(a)
-        a.scatter(pts.longitude, pts.latitude, c=pts.rwi_pred_imagery_context, cmap=WEALTH, norm=norm, s=1.15,
-                  marker="s", lw=0, zorder=2, rasterized=True)
-        M.finish(a, places=PLACES)
-        title, note = ("Wealth predicted from imagery, out of area",
-                       f"{len(pts):,} grid cells; out-of-fold predictions, 50 km spatial blocks")
-    else:
-        M.draw(a, "rwi_meta", WEALTH, norm, places=PLACES, lw=0.15)
-        title, note = "The target: relative wealth across 544 upazilas", "Label: Meta Relative Wealth Index"
-    M.bar(fig, a, WEALTH, norm, "Relative Wealth Index" + (", predicted" if pts is not None else ""),
-          [-0.6, 0, 0.6, 1.2], extend="both")
-    a.text(0.05, 0.022, note, transform=a.transAxes, fontsize=6.5, color=INK2)
-    fig.text(0.012, 0.957, "a", fontsize=8, fontweight="bold", va="baseline")
-    fig.text(0.028, 0.957, title, fontsize=7.5, va="baseline")
+    X0, W, H = 0.135, 0.33, 0.20
+    a, b, c = (fig.add_axes([X0, y, W, H]) for y in (0.735, 0.41, 0.085))
+    held, alt = {"color": BLUE}, {"color": GREY, "mfc": "white"}
 
+    # a: built-up classification by city, U-Net against gradient boosting, on spatially held-out blocks
+    T = rows(TB / "builtup_model_comparison_cities.csv")
+    f1 = {m: {r["aoi"]: float(r["f1"]) for r in T if r["model"] == m} for m in ("unet", "gbm")}
+    cities = sorted([k for k in f1["unet"] if k != "pooled"], key=lambda k: f1["unet"][k])
+    order = cities + ["pooled"]
+    for i, k in enumerate(order):
+        dumbbell(a, i, f1["gbm"][k], f1["unet"][k])
+        a.text(f1["unet"][k] + 0.012, i, f'{f1["unet"][k]:.2f}', ha="left", va="center", fontsize=6.3,
+               fontweight="bold" if k == "pooled" else "normal")
+    a.axhline(len(cities) - 0.5, color="#d9dde1", lw=0.5)
+    key(a, [(held, "U-Net"), (alt, "gradient boosting")], loc="lower right", anchor=(1.0, 0.0), vertical=True)
+    a.set_yticks(range(len(order)), [k.replace("city_", "").title() if k != "pooled" else "Six cities pooled" for k in order])
+    a.tick_params(axis="y", labelsize=6.3)
+    a.set_xlim(0.5, 1.08); a.set_ylim(-0.6, len(order) - 0.4); a.set_xticks([0.5, 0.6, 0.7, 0.8, 0.9])
+    a.set_xlabel("F1 against WorldCover, held-out blocks", labelpad=2)
+    rowaxis(a); panel(fig, a, "a", "Built-up land: U-Net exceeds gradient boosting in every city", dx=-0.123)
+
+    # b: year-to-year noise of built-up maps under the two compositing designs
+    U = sorted(rows(TB / "urban_expansion_summary.csv"), key=lambda r: float(r["reversal_rate_v1_least_cloudy"]))
+    for i, r in enumerate(U):
+        dumbbell(b, i, 100 * float(r["reversal_rate_v1_least_cloudy"]), 100 * float(r["reversal_rate"]))
+    key(b, [(held, "phenology-balanced"), (alt, "least-cloudy")], loc="lower right", anchor=(1.0, 0.0), vertical=True)
+    b.set_yticks(range(len(U)), [r["city"].title() for r in U]); b.tick_params(axis="y", labelsize=6.3)
+    b.set_xlim(0, 34); b.set_ylim(-0.6, len(U) - 0.4); b.set_xticks([0, 10, 20])
+    b.set_xlabel("Built-up pixels that revert the next year (%)", labelpad=2)
+    rowaxis(b); panel(fig, b, "b", "Stability: balanced compositing reduces year-to-year noise", dx=-0.123)
+
+    # c: wealth prediction by feature set, spatial-block against random folds
     Wr = rows(TB / "wealth_prediction_results.csv")
     names = {"context only: pop+travel time (gbm)": "Pop. + travel time", "s2_stats (gbm)": "Sentinel-2 statistics",
              "mosaiks (ridge)": "Random conv. features", "landcover (gbm)": "Land cover",
@@ -450,47 +466,45 @@ def measurement(M):
     get = lambda cv: {r["features"]: float(r["r2_upazila"]) for r in Wr if r["target"] == "rwi" and r["cv"].startswith(cv)}  # noqa: E731
     sp, rd = get("spatial"), get("random")
     order = sorted(names, key=lambda k: sp[k])
-
-    # b: upazila means, prediction against label
-    b = fig.add_axes([0.665, 0.70, 0.185, 0.235])
-    if pts is not None:
-        u = pts.groupby("GID_3")[["rwi", "rwi_pred_imagery_context"]].mean()
-        b.plot([-0.6, 1.6], [-0.6, 1.6], color=INK2, lw=0.6, ls=(0, (3, 3)))
-        b.scatter(u.rwi, u.rwi_pred_imagery_context, s=4, color=BLUE, lw=0.2, edgecolor="white", alpha=0.85)
-        b.set_xlim(-0.6, 1.6); b.set_ylim(-0.6, 1.6); b.set_xticks([0, 1]); b.set_yticks([0, 1])
-        b.set_aspect("equal", adjustable="box")
-        b.set_xlabel("Label, upazila mean", labelpad=2); b.set_ylabel("Predicted", labelpad=2)
-        b.text(1.55, -0.45, f"{len(u)} upazilas", ha="right", fontsize=6.5, color=INK2)
-        detach(b); panel(fig, b, "b", "Predicted and labeled upazila means agree", dx=-0.06)
-    else:
-        b.set_visible(False)
-
-    # c: accuracy by feature set, spatial-block against random folds
-    c = fig.add_axes([0.72, 0.33, 0.265, 0.215])
     for i, k in enumerate(order):
         dumbbell(c, i, rd[k], sp[k])
         c.text(sp[k] - 0.016, i, f"{sp[k]:.2f}", ha="right", va="center", fontsize=6.3,
                fontweight="bold" if i == len(order) - 1 else "normal")
-    leader(c, (sp[order[1]], 1), (0.37, 2.55), "spatial-block CV", ha="left")
-    leader(c, (rd[order[0]], 0), (0.56, 0.0), "random CV", ha="left")
+    key(c, [(held, "50 km spatial blocks"), (alt, "random folds")], loc="lower right", anchor=(1.0, 0.0), vertical=True)
     c.set_yticks(range(len(order)), [names[k] for k in order]); c.tick_params(axis="y", labelsize=6.3)
-    c.set_xlim(0.36, 0.95); c.set_ylim(-0.6, len(order) - 0.4); c.set_xticks([0.4, 0.6, 0.8])
+    c.set_xlim(0.36, 1.12); c.set_ylim(-0.6, len(order) - 0.4); c.set_xticks([0.4, 0.6, 0.8])
     c.set_xlabel("Out-of-sample R², upazila wealth", labelpad=2)
-    rowaxis(c); panel(fig, c, "c", "Random folds overstate out-of-area accuracy", dx=-0.223)
+    rowaxis(c); panel(fig, c, "c", "Wealth: random folds overstate out-of-area accuracy", dx=-0.123)
 
-    # d: year-to-year noise of built-up maps under the two compositing designs
-    d = fig.add_axes([0.72, 0.085, 0.265, 0.135])
-    U = sorted(rows(TB / "urban_expansion_summary.csv"), key=lambda r: float(r["reversal_rate_v1_least_cloudy"]))
-    for i, r in enumerate(U):
-        dumbbell(d, i, 100 * float(r["reversal_rate_v1_least_cloudy"]), 100 * float(r["reversal_rate"]))
-    top = U[-1]
-    leader(d, (100 * float(top["reversal_rate_v1_least_cloudy"]), len(U) - 1), (17.5, len(U) - 0.2), "least-cloudy",
-           ha="left")
-    leader(d, (100 * float(top["reversal_rate"]), len(U) - 1), (4.0, len(U) - 0.2), "balanced", ha="left")
-    d.set_yticks(range(len(U)), [r["city"].title() for r in U]); d.tick_params(axis="y", labelsize=6.3)
-    d.set_xlim(0, 27); d.set_ylim(-0.6, len(U) + 0.1); d.set_xticks([0, 10, 20])
-    d.set_xlabel("Built pixels that flip back next year (%)", labelpad=2)
-    rowaxis(d); panel(fig, d, "d", "Phenology-balanced compositing reduces noise", dx=-0.223)
+    # d: wealth predicted out of area, with predicted against labeled upazila means
+    d = fig.add_axes([0.515, 0.03, 0.475, 0.905])
+    norm = Normalize(-0.6, 1.2)
+    P = DATA / "wealth" / "predictions.parquet"
+    pts = pd.read_parquet(P) if P.exists() else None
+    if pts is not None:
+        M.base(d)
+        d.scatter(pts.longitude, pts.latitude, c=pts.rwi_pred_imagery_context, cmap=WEALTH, norm=norm, s=1.15,
+                  marker="s", lw=0, zorder=2, rasterized=True)
+        M.finish(d, places=PLACES)
+        title, note = "Wealth predicted from imagery, out of area", f"{len(pts):,} grid cells; out-of-fold predictions"
+        u = pts.groupby("GID_3")[["rwi", "rwi_pred_imagery_context"]].mean()
+        ins = d.inset_axes([0.62, 0.845, 0.33, 0.125])
+        ins.set_facecolor("none")
+        ins.plot([-0.6, 1.6], [-0.6, 1.6], color=INK2, lw=0.6, ls=(0, (3, 3)))
+        ins.scatter(u.rwi, u.rwi_pred_imagery_context, s=3, color=BLUE, lw=0.15, edgecolor="white", alpha=0.85)
+        ins.set_xlim(-0.6, 1.6); ins.set_ylim(-0.6, 1.6); ins.set_xticks([0, 1]); ins.set_yticks([0, 1])
+        ins.set_xlabel(f"Label, {len(u)} upazila means", fontsize=6.3, labelpad=1.5)
+        ins.set_ylabel("Predicted", fontsize=6.3, labelpad=1.5)
+        ins.tick_params(labelsize=6, length=1.8, pad=1.5)
+        detach(ins)
+    else:
+        M.draw(d, "rwi_meta", WEALTH, norm, places=PLACES, lw=0.15)
+        title, note = "The target: relative wealth across 544 upazilas", "Label: Meta Relative Wealth Index"
+    M.bar(fig, d, WEALTH, norm, "Relative Wealth Index" + (", predicted" if pts is not None else ""),
+          [-0.6, 0, 0.6, 1.2], extend="both")
+    d.text(0.05, 0.022, note, transform=d.transAxes, fontsize=6.5, color=INK2)
+    fig.text(0.515, 0.957, "d", fontsize=8, fontweight="bold", va="baseline")
+    fig.text(0.531, 0.957, title, fontsize=7.5, va="baseline")
     fig.savefig(FIG / "measurement.png", dpi=300)
 
 
@@ -543,9 +557,8 @@ def city_maps(R=None):
         fig.text(bx.x1, bx.y1 + 0.008, f'{float(r["built_km2_t0"]):.0f} → {float(r["built_km2_t1"]):.0f} km²',
                  fontsize=6.5, va="baseline", ha="right", color=INK2)
         if i == 2:
-            for j, (col, txt) in enumerate(((C_OLD, "built-up in 2020"), (C_NEW, "added 2020–2026"))):
-                ax.plot(0.05 * n, (0.05 + 0.058 * j) * n, marker="s", ms=4, color=col, mec="white", mew=0.4)
-                ax.text(0.082 * n, (0.05 + 0.058 * j) * n, txt, fontsize=6.5, va="center", path_effects=halo)
+            key(ax, [({"kind": "patch", "color": C_OLD}, "built-up in 2020"), ({"kind": "patch", "color": C_NEW}, "added 2020–2026")],
+                loc="upper left", anchor=(0.03, 0.97), vertical=True, face="white")
         ax.set_xlim(0, n); ax.set_ylim(n, 0)
     fig.savefig(FIG / "urban_change_maps.png", dpi=300)
 
@@ -583,11 +596,9 @@ def urban_series(R=None):
             col = {"dhaka": INK, "chattogram": GREEN}.get(name, "#b8c2cc")
             b.plot(d["r"], 100 * (d["s1"] - d["s0"]), color=col, lw=1.3 if col != "#b8c2cc" else 0.8,
                    zorder=3 if col != "#b8c2cc" else 2)
-        pk = {k: (R[k]["r"][np.nanargmax(R[k]["s1"] - R[k]["s0"])], 100 * np.nanmax(R[k]["s1"] - R[k]["s0"]))
-              for k in ("dhaka", "chattogram")}
-        leader(b, pk["chattogram"], (8.0, 15.5), "Chattogram", ha="left")
-        leader(b, pk["dhaka"], (11.0, 11.8), "Dhaka", ha="left")
-        leader(b, (1.2, 15.0), (3.2, 19.0), "four smaller cities", ha="left", color=INK2)
+        key(b, [({"kind": "line", "color": INK}, "Dhaka"), ({"kind": "line", "color": GREEN}, "Chattogram"),
+                ({"kind": "line", "color": "#b8c2cc", "lw": 0.9}, "four smaller cities")], loc="upper right",
+            anchor=(1.0, 1.0), vertical=True)
         b.set_xlim(0, 25); b.set_ylim(0, 21); b.set_xticks([0, 5, 10, 15, 20, 25]); b.set_yticks([0, 10, 20])
         b.set_xlabel("Distance from the city center (km)", labelpad=2)
         b.set_ylabel("Built-up share added\n2020–2026 (pp)")
@@ -599,8 +610,8 @@ def urban_series(R=None):
     G = sorted([r for r in U if r["gradient_b_t0"]], key=lambda r: float(r["gradient_b_t0"]))
     for i, r in enumerate(G):
         dumbbell(c, i, float(r["gradient_b_t0"]), float(r["gradient_b_t1"]))
-    leader(c, (float(G[-1]["gradient_b_t0"]), len(G) - 1), (0.62, len(G) - 0.35), "2020", ha="left")
-    leader(c, (float(G[-1]["gradient_b_t1"]), len(G) - 1), (0.30, len(G) - 0.35), "2026", ha="left")
+    key(c, [({"color": BLUE}, "2026"), ({"color": GREY, "mfc": "white"}, "2020")], loc="lower right", anchor=(1.0, 0.0),
+        vertical=True)
     c.set_yticks(range(len(G)), [r["city"].title() for r in G])
     c.set_xlim(0, 1.0); c.set_ylim(-0.55, len(G) - 0.1); c.set_xticks([0, 0.5, 1.0])
     c.set_xlabel("Density gradient (per km)", labelpad=2)

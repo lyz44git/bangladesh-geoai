@@ -11,17 +11,17 @@ six largest cities, and predicts sub-district wealth out of area with R² = 0.83
 gain from the bridge at +0.47%, of which three-quarters accrues to the 19% of the population in upazilas where travel
 time to Dhaka fell by about 10% or more.
 
-<img src="figures/figure1.png" alt="Four panels following the study's four steps: wealth-prediction accuracy by feature set; built-up growth in six cities; event study of the bridge's effect on built-up land; map of model-implied income change by upazila." width="100%">
+<img src="figures/figure1.png" alt="Four panels following the study's four steps: accuracy of the built-up classifier and of wealth prediction on held-out areas; built-up growth in six cities; event study of the bridge's effect on built-up land; map of model-implied income change by upazila." width="100%">
 
-**Figure 1 | From measurement to evaluation.** **a**, Measurement: out-of-sample R² for upazila wealth by feature
-set under 50 km spatial-block (filled) and random (open) cross-validation. **b**, Description: growth in built-up
-area in the six largest cities, 2020–2026, split by where the new building is. **c**, Evaluation: event-study
-estimates of the bridge's effect on built-up share across 34,626 cells with 95% intervals (shaded), 2022 as
-reference; the negative naive estimates vanish once trends by baseline density are controlled. **d**,
-Interpretation: short-run real income change implied by the spatial equilibrium model, by upazila (square: the
-bridge); inset, the same change against the reduction in travel time to Dhaka. Drawn by
-[`figures/make_figure1.py`](figures/make_figure1.py) from the committed result tables and the GADM 4.1 boundaries,
-which are not stored here.
+**Figure 1 | From measurement to evaluation.** **a**, Measurement: accuracy on held-out areas of the built-up
+classifier (F1 against WorldCover, six cities pooled) and of wealth prediction (R² for upazila means against the
+Relative Wealth Index; open markers, random folds). **b**, Description: growth in built-up area in the six largest
+cities, 2020–2026, by type of expansion. **c**, Evaluation: event-study estimates of the effect of the bridge on
+built-up share across 34,626 cells with 95% intervals (shaded), 2022 as reference; the negative estimates under cell
+and year fixed effects are absent once trends by baseline density are controlled. **d**, Interpretation: short-run
+real income change implied by the spatial equilibrium model, by upazila (square: the bridge); inset, the same change
+against the reduction in travel time to Dhaka. Drawn by [`figures/make_figure1.py`](figures/make_figure1.py) from the
+committed result tables and the GADM 4.1 boundaries, which are not stored here.
 
 Technical report: [`docs/TECHNICAL_REPORT_EN.md`](docs/TECHNICAL_REPORT_EN.md) · Indicator atlas for 544 upazilas:
 [`docs/atlas/ATLAS.md`](docs/atlas/ATLAS.md)
@@ -46,34 +46,48 @@ to the bridge, and then determine whether the test could have detected the effec
 
 ## 1. Measurement: accuracy is sufficient for monitoring and targeting
 
-Built-up maps are accurate at city scale and stable from year to year once compositing removes seasonal variation,
-and imagery predicts upazila wealth in areas excluded from training. Accuracy is measured against ESA WorldCover for
-built-up land and against the Meta Relative Wealth Index for wealth.
+Two measures are derived from the imagery. Built-up land is the outcome of steps 2 to 4; wealth is a product in its
+own right and an input to the model of step 4. Both are accurate on areas excluded from training. Accuracy is measured
+against ESA WorldCover for built-up land and against the Meta Relative Wealth Index for wealth.
+
+**Built-up land.**
 
 | Built-up classifier, six cities pooled (spatially held-out blocks) | Precision | Recall | F1 |
 |---|---|---|---|
 | U-Net | 0.86 | 0.75 | 0.80 |
 | Gradient boosting, default threshold | 0.52 | 0.96 | 0.67 |
 
+- **The U-Net exceeds gradient boosting in every city** (Figure 2a); at its default threshold, gradient boosting
+  overstates built-up area.
+- **Stability over time depends on compositing more than on the classifier** (Figure 2b). Relative to least-cloudy
+  compositing, the phenology-balanced design lowers the year-to-year reversal rate by 25–52% and the trend-residual
+  standard deviation by 29–75% across the six cities. Without it, seasonal variation would register as urban change and
+  contaminate the event study in step 3.
+- **Accuracy declines where settlement is sparse.** In the rural Padma region (1.3% built-up), the U-Net reaches
+  F1 = 0.66 (precision 0.79, recall 0.56).
+
+**Wealth.**
+
 | Wealth prediction (Meta Relative Wealth Index) | R², grid cells | R², upazila means |
 |---|---|---|
 | Spatial blocks (50 km) | 0.45 | 0.83 |
 | Random folds | 0.50 | 0.92 |
 
-- **Stability over time depends on compositing more than on the classifier.** Relative to least-cloudy compositing,
-  the phenology-balanced design lowers the year-to-year reversal rate by 25–52% and the trend-residual standard
-  deviation by 29–75% across the six cities. Without it, seasonal variation would register as urban change and
-  contaminate the event study in step 3.
-- **Accuracy declines where settlement is sparse.** In the rural Padma region (1.3% built-up), the U-Net reaches
-  F1 = 0.66 (precision 0.79, recall 0.56).
-- **Random cross-validation overstates wealth accuracy.** The spatial-block figures are the relevant ones for areas
-  without labels. In the best imagery model, built-up land cover alone accounts for 31% of the gain, so predicted
-  wealth largely reflects the built environment.
+- **Random cross-validation overstates wealth accuracy** for every feature set (Figure 2c). The spatial-block figures
+  are the relevant ones for areas without labels.
+- **Predicted wealth largely reflects the built environment** (Figure 2d). In the best imagery model, built-up land
+  cover alone accounts for 31% of the gain.
+- **The index also sets relative wages in the spatial model of step 4.** The imagery model indicates that this input
+  can be largely reproduced from imagery out of area.
 
-The wealth index also sets relative wages in the spatial model of step 4. The imagery model indicates that this input
-can be largely reproduced from imagery out of area.
+![Built-up classifier F1 by city for the U-Net and gradient boosting; year-to-year noise of built-up maps under two compositing designs; wealth-prediction accuracy by feature set under spatial-block and random cross-validation; wealth predicted from imagery out of area with predicted against labeled upazila means](outputs/figures/measurement.png)
 
-![Wealth predicted from imagery for 26,556 grid cells out of area; upazila means of prediction against label; accuracy by feature set under spatial-block and random cross-validation; year-to-year noise of built-up maps under two compositing designs](outputs/figures/measurement.png)
+**Figure 2 | Measurement.** **a**, F1 of the built-up classifier against WorldCover on spatially held-out blocks, by
+city, for the U-Net and for gradient boosting at its default threshold. **b**, Share of built-up pixels classified as
+non-built in the following year, 2020–2026, under least-cloudy and phenology-balanced compositing. **c**,
+Out-of-sample R² for upazila mean wealth by feature set under 50 km spatial-block and random cross-validation. **d**,
+Wealth predicted from imagery and context for each grid cell by a model fitted without its 50 km block; inset,
+predicted against labeled upazila means. Panel d is drawn from the re-run described under Reproduction.
 
 ## 2. Description: cities grew 27–72%, mostly at the edge
 
@@ -90,8 +104,9 @@ change is large.
 | Sylhet | +41% | 55% |
 | Barishal | +72% | 61% |
 
-Edge expansion accounts for 50–64% of new built-up land, and radial density gradients flatten in every city with a
-measurable gradient. In Dhaka and Chattogram the largest additions lie 4–7 km from the center.
+Edge expansion accounts for 50–64% of new built-up land (Figure 3). In Dhaka and Chattogram the largest additions
+lie 4–7 km from the center (Figure 4b), and radial density gradients flatten in every city with a measurable gradient
+(Figure 4c).
 
 The contrast with the bridge corridor is material to step 4. Built-up area in the six cities grows by 4.0–9.5% a year
 from a large base. The rural areas served by the bridge start from 0.37% built-up, so even a large proportional
@@ -99,14 +114,23 @@ response adds very little built-up land in absolute terms.
 
 ![Built-up land in 2020 and land added by 2026 in six cities, each with a 10 km scale bar](outputs/figures/urban_change_maps.png)
 
+**Figure 3 | Built-up land in six cities.** Built-up land in 2020 and land added by 2026, from the U-Net maps. Each
+panel shows the study area of one city with a 10 km scale bar, the growth in built-up area, and the built-up area in
+2020 and 2026.
+
 ![Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city center; density gradients in 2020 and 2026](outputs/figures/urban_area_and_profiles.png)
+
+**Figure 4 | Form of urban growth.** **a**, Built-up area by city from the smoothed annual maps, 2020 = 100. **b**,
+Built-up share added between 2020 and 2026 by distance from the city center. **c**, Density gradient of built-up
+share in 2020 and 2026; Barishal is omitted because its 2020 gradient is not defined. Panel b is drawn from the re-run
+described under Reproduction.
 
 ## 3. Evaluation: no detectable effect of the bridge on built-up land
 
 In the four years after opening, areas with larger reductions in travel time to Dhaka did not add built-up land
-detectably faster than comparable areas. Treatment is the modeled reduction in travel time to Dhaka (log points), which varies
-continuously across 34,626 cells. The table gives the effect of a one-log-point reduction on built-up share, in
-percentage points.
+detectably faster than comparable areas. Treatment is the modeled reduction in travel time to Dhaka (log points;
+Figure 5a), which varies continuously across 34,626 cells. The table gives the effect of a one-log-point reduction on
+built-up share, in percentage points.
 
 | Specification | Coefficient | 95% CI | Randomization p |
 |---|---|---|---|
@@ -115,10 +139,10 @@ percentage points.
 | (3) + division × year fixed effects | −0.002 | −0.13 to 0.12 | 0.98 |
 | (2) with district clusters | 0.060 | −0.11 to 0.23 | |
 
-- **The negative naive estimate reflects selection on trends.** Treated areas are far more rural (0.37% built-up before
+- **The negative naive estimate reflects selection on trends** (Figure 5b). Treated areas are far more rural (0.37% built-up before
   opening against 2.22%) and add fewer percentage points each year. Once trends are allowed to differ by baseline
   density, the pre-trends are absent and the estimate is a null.
-- **The null is robust** to the assumed ferry speed, the outcome definition, and the exclusion of cells near the
+- **The null is robust** (Figure 5c) to the assumed ferry speed, the outcome definition, and the exclusion of cells near the
   bridge or near Dhaka. A binary-treatment version of (2) is positive (0.097, CI 0.03 to 0.17) but is not robust to
   district clustering or randomization inference.
 
@@ -127,26 +151,33 @@ response is too small for this design to detect. Step 4 uses a spatial equilibri
 
 ![Reduction in travel time to Dhaka on a 500 m grid; event-study estimates under three specifications; the coefficient under alternative choices](outputs/figures/padma_treatment_and_event_study.png)
 
+**Figure 5 | The bridge.** **a**, Reduction in modeled travel time to Dhaka on a 500 m grid, from least-cost routes
+with and without the bridge. **b**, Event-study coefficients with 95% intervals for three specifications, 2022 as
+reference; the 2018–2019 estimates rest on an older image archive and are not comparable. **c**, The coefficient under
+the three main specifications and under alternative choices applied to specification (2), with 95% intervals. Panel a
+is drawn from the re-run described under Reproduction.
+
 ## 4. Interpretation: the model-implied effect is below the detection threshold, and the implied welfare gain is +0.47%
 
 A spatial equilibrium model implies an effect on built-up land almost identical to the point estimate and well below
 the minimum detectable effect of the design. The null is therefore uninformative about an effect of the predicted
 size, although it does exclude substantially larger ones.
 
-- **Model-implied effect.** At full long-run adjustment the model implies a coefficient of 0.059, against a point
+- **Model-implied effect** (Figure 6a). At full long-run adjustment the model implies a coefficient of 0.059, against a point
   estimate of 0.060. The implied coefficient is obtained by regressing the model's predicted change in built-up share
   on treatment intensity across the same region, so general-equilibrium effects on comparison areas are reflected in
   it. For a cell at the mean treatment intensity of treated cells (travel-time reduction above about 5%), this
   corresponds to 0.026 percentage points of built-up share: about 0.4 of one 30 m pixel in a cell of 1,600 pixels, of
   which about 6 were built-up before the bridge.
-- **Detection threshold.** At 80% power in a two-sided 5% test, the minimum detectable coefficient is 0.13 with
+- **Detection threshold** (Figure 6b). At 80% power in a two-sided 5% test, the minimum detectable coefficient is 0.13 with
   upazila clustering and 0.25 with district clustering, 2.3 and 4.2 times the model-implied value. Power against the
   model-implied value is 17–23% and 8–10% respectively, and 6–9% if only half of the long-run adjustment has occurred.
   The estimate does exclude coefficients above 0.15 (upazila clustering), about 2.6 times the model-implied value.
-- **Welfare.** National welfare rises by 0.47% at the main parameters (0.30–0.79% across the parameter grid). The
+- **Welfare** (Figure 6c). National welfare rises by 0.47% at the main parameters (0.30–0.79% across the parameter
+  grid). The
   estimate covers goods trade only and excludes passenger time savings and commuting. Omitting the local non-traded
   sector raises the gain to 0.79%, about 70% higher.
-- **Incidence.** The 19% of the population in treated upazilas (travel-time reduction of about 10% or more) receives
+- **Incidence** (Figure 6d). The 19% of the population in treated upazilas (travel-time reduction of about 10% or more) receives
   75% of the total gain: real income rises by 1.9% there and by 0.15% elsewhere. The gains are not progressive. With
   upazilas ordered by the Relative Wealth Index into fifths of the population, real income rises by 0.27% in the
   poorest fifth, 0.58–0.61% in the third and fourth, and 0.43% in the richest. Upazilas holding 29% of the population
@@ -154,7 +185,14 @@ size, although it does exclude substantially larger ones.
   61% of the poorest fifth lives in such upazilas. The index also sets baseline wages in the model, so the ranking is
   not independent of the model's inputs.
 
-![Long-run population change by upazila with real income gain by wealth fifth; welfare gain across parameter values; model-implied coefficient, estimates and minimum detectable effect; the model-implied effect in a typical treated cell, in pixels](outputs/figures/qse_padma.png)
+![The model-implied effect in a typical treated cell, in pixels; model-implied coefficient, estimates and minimum detectable effect; welfare gain across parameter values; long-run population change by upazila with real income gain by wealth fifth](outputs/figures/qse_padma.png)
+
+**Figure 6 | Interpretation.** **a**, The model-implied effect in a cell at the mean treatment intensity, shown to
+scale in a 1.2 km cell of 1,600 pixels (schematic; positions illustrative). **b**, Model-implied coefficient with its
+90% interval across parameter draws, the estimate with 95% intervals under two clustering choices, and the minimum
+detectable effect at 80% power (bars). **c**, National welfare gain when one parameter at a time is varied; the
+dashed line marks the main parameters. **d**, Long-run population change by upazila; inset, short-run real income gain
+by wealth fifth of the population.
 
 ## Conclusions
 
@@ -193,9 +231,10 @@ replaced.
   report a welfare gain that is not confronted with data. Applying both to the same outcome provides the effect size
   against which the test should be assessed and establishes that this design cannot detect it.
 - **Incidence.** The model reports gains and losses for each of 544 upazilas, which an aggregate appraisal does not.
-- **Speed and reuse.** Each counterfactual solves in 0.03 seconds, and the travel-time matrices for six network
-  scenarios require about eight minutes, so another corridor can be appraised by editing the network and the study
-  area.
+- **Transferability.** The model requires only open inputs (population, a road network and a wealth index), so the
+  same appraisal can be produced for a proposed corridor before construction and for alternative alignments. Because a
+  counterfactual solves in a fraction of a second, uncertainty over parameters can be reported in full, as with the
+  600 draws used here, rather than as a single point estimate.
 
 The approach complements survey data and does not replace it. Imagery measures the built environment rather than
 consumption: the wealth labels are themselves model-based, accuracy for individual grid cells is low (R² = 0.45), and
