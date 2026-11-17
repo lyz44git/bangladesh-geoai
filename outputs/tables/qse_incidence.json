@@ -1,0 +1,77 @@
+{
+ "n_upazilas": 544,
+ "national_real_income_sr_pct": 0.4725268172420582,
+ "wealth_fifths": [
+  {
+   "fifth": 1,
+   "upazilas": 141,
+   "population_share": 0.19975800649198794,
+   "mean_rwi": -0.175511038454774,
+   "real_income_sr_pct": 0.2721489385129111,
+   "population_lr_pct": -0.3784101488515555,
+   "population_share_treated": 0.19943313703677223,
+   "population_share_in_losing_upazilas": 0.6055380806670718
+  },
+  {
+   "fifth": 2,
+   "upazilas": 125,
+   "population_share": 0.20011157744152824,
+   "mean_rwi": 0.004327303284855674,
+   "real_income_sr_pct": 0.4678283112004251,
+   "population_lr_pct": -0.003638967181053824,
+   "population_share_treated": 0.28638584068347966,
+   "population_share_in_losing_upazilas": 0.3710956530641271
+  },
+  {
+   "fifth": 3,
+   "upazilas": 105,
+   "population_share": 0.20079942635600848,
+   "mean_rwi": 0.16352933398378197,
+   "real_income_sr_pct": 0.5803901770564597,
+   "population_lr_pct": 0.19985538564129304,
+   "population_share_treated": 0.23817042125334417,
+   "population_share_in_losing_upazilas": 0.2150443201076432
+  },
+  {
+   "fifth": 4,
+   "upazilas": 90,
+   "population_share": 0.19949957728465473,
+   "mean_rwi": 0.3454294786577624,
+   "real_income_sr_pct": 0.6122477841478069,
+   "population_lr_pct": 0.2535982615662868,
+   "population_share_treated": 0.1746844740664215,
+   "population_share_in_losing_upazilas": 0.20090616910817724
+  },
+  {
+   "fifth": 5,
+   "upazilas": 83,
+   "population_share": 0.19983141242582075,
+   "mean_rwi": 1.0065994462711392,
+   "real_income_sr_pct": 0.4296613665531885,
+   "population_lr_pct": -0.07208712497642042,
+   "population_share_treated": 0.03943460192737461,
+   "population_share_in_losing_upazilas": 0.0580632579036625
+  }
+ ],
+ "treated": {
+  "upazilas": 131,
+  "population_share": 0.18770172311767935,
+  "share_of_total_income_gain": 0.7477820033069525,
+  "mean_rwi_treated": 0.09232035213982225,
+  "mean_rwi_rest": 0.3094643271216673
+ },
+ "losers": {
+  "upazilas": 159,
+  "population_share": 0.29008595113202235,
+  "mean_real_income_sr_pct": -0.15565705267840022,
+  "largest_loss_pct": -0.36502998521296126,
+  "upazilas_by_division": {
+   "Chittagong": 8,
+   "Dhaka": 11,
+   "Khulna": 2,
+   "Mymensingh": 10,
+   "Rajshahi": 70,
+   "Rangpur": 58
+  }
+ }
+}

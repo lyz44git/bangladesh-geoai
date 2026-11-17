@@ -231,3 +231,22 @@ def test_qse_nontraded_sector_scales_short_run_gains_by_traded_share():
     lr2 = qse.counterfactual(pi, Y, lam, phi_hat, sigma=5, alpha=0.75, eps=3, alpha_N=0.30)
     assert 1 < lr2["welfare"] < lr1["welfare"]
     assert np.abs(np.log(lr2["L_hat"])).max() < np.abs(np.log(lr1["L_hat"])).max()
+
+
+def test_power_and_minimum_detectable_effect_agree():
+    se = 0.05
+    mde = econ.minimum_detectable_effect(se, target_power=0.80)
+    assert abs(mde / se - 2.8016) < 1e-3
+    assert abs(econ.power(mde, se) - 0.80) < 1e-3  # the neglected tail is below 1e-4
+    assert abs(econ.power(0.0, se) - 0.05) < 1e-9
+    assert econ.power(0.5 * mde, se) < econ.power(mde, se) < econ.power(2 * mde, se)
+
+
+def test_weighted_groups_hold_equal_weight_and_are_ordered():
+    rng = np.random.default_rng(0)
+    v, w = rng.normal(size=2000), rng.uniform(0.5, 1.5, size=2000)
+    g = econ.weighted_groups(v, w, k=5)
+    shares = np.array([w[g == i].sum() for i in range(1, 6)]) / w.sum()
+    assert set(g) == {1, 2, 3, 4, 5} and np.allclose(shares, 0.2, atol=0.002)
+    assert all(v[g == i].max() <= v[g == i + 1].min() for i in range(1, 5))
+

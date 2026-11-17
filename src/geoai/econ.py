@@ -1,9 +1,12 @@
-"""Panel regressions with multiple absorbed fixed effects and cluster-robust SEs.
+"""Panel regressions with multiple absorbed fixed effects and cluster-robust SEs, and design calculations.
 
 Fixed effects are removed by alternating projections (the same idea as
 reghdfe / fixest), then OLS is run on the demeaned data. Absorbed effects
 nested within clusters are not counted in the small-sample correction,
 matching common practice.
+
+`power` and `minimum_detectable_effect` use the normal approximation for a two-sided test;
+`weighted_groups` splits units into groups holding equal shares of a weight (for example population).
 """
 from __future__ import annotations
 
@@ -57,3 +60,29 @@ def feols(df: pd.DataFrame, y: str, x: list[str], fe: list[str], cluster: str):
     out["t"] = out.coef / out.se
     out["ci_lo"], out["ci_hi"] = out.coef - 1.96 * out.se, out.coef + 1.96 * out.se
     return out, cov
+
+
+def power(effect: float, se: float, alpha: float = 0.05) -> float:
+    """Power of a two-sided test of size alpha against a true effect, given the standard error."""
+    from scipy.stats import norm
+
+    z = norm.ppf(1 - alpha / 2)
+    return float(norm.cdf(-z + effect / se) + norm.cdf(-z - effect / se))
+
+
+def minimum_detectable_effect(se: float, target_power: float = 0.80, alpha: float = 0.05) -> float:
+    """Smallest true effect a two-sided test of size alpha detects with the target power (one-tail approximation)."""
+    from scipy.stats import norm
+
+    return float((norm.ppf(1 - alpha / 2) + norm.ppf(target_power)) * se)
+
+
+def weighted_groups(values: np.ndarray, weights: np.ndarray, k: int = 5) -> np.ndarray:
+    """Group labels 1..k, ordered by `values`, each holding about 1/k of the total weight."""
+    values, weights = np.asarray(values, float), np.asarray(weights, float)
+    order = np.argsort(values, kind="stable")
+    cum = np.cumsum(weights[order]) / weights.sum()
+    mid = cum - weights[order] / weights.sum() / 2  # weight midpoint of each unit
+    out = np.empty(len(values), int)
+    out[order] = np.minimum((mid * k).astype(int), k - 1) + 1
+    return out

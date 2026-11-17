@@ -56,8 +56,8 @@ def detach(ax):
 
 def letter(fig, ax, s, title, x=0.012):
     box = ax.get_position()
-    fig.text(x, box.y1 + 0.022, s, fontsize=10, fontweight="bold", va="bottom")
-    fig.text(x + 0.022, box.y1 + 0.0235, title, fontsize=7.5, va="bottom")
+    fig.text(x, box.y1 + 0.022, s, fontsize=8, fontweight="bold", va="baseline")
+    fig.text(x + 0.016, box.y1 + 0.022, title, fontsize=7.5, va="baseline")
 
 
 def leader(ax, xy, xytext, text, **kw):
@@ -91,7 +91,7 @@ def draw():
                linespacing=1.15, arrowprops=dict(arrowstyle="-|>", lw=0.6, color=INK, shrinkB=2.5, mutation_scale=6))
     a.plot(*BRIDGE, marker="s", ms=3.4, mfc=INK, mec="white", mew=0.7)
     a.set_xlim(87.9, 92.8); a.set_ylim(20.42, 27.0); a.set_aspect(1 / 0.916)
-    a.set_xticks([]); a.set_yticks([])
+    a.set_xticks([]); a.set_yticks([]); a.set_xlabel(""); a.set_ylabel("")
     for s in a.spines.values():
         s.set_visible(False)
     cax = a.inset_axes([0.05, 0.10, 0.42, 0.016])
@@ -110,9 +110,9 @@ def draw():
     ins.set_ylabel("Income (%)", fontsize=6.5, labelpad=1.5)
     ins.set_xticks([0, 35, 70]); ins.set_yticks([0, 4, 8]); ins.tick_params(labelsize=6, length=1.8, pad=1.5)
     detach(ins)
-    fig.text(0.515, 0.957, "d", fontsize=10, fontweight="bold", va="bottom")
-    fig.text(0.537, 0.9585, f"Model: welfare +{Q['welfare_sr_pct']:.2f}%, gains in the south-west", fontsize=7.5,
-             va="bottom")
+    fig.text(0.515, 0.957, "d", fontsize=8, fontweight="bold", va="baseline")
+    fig.text(0.531, 0.957, f"Model: welfare +{Q['welfare_sr_pct']:.2f}%, gains in the southwest", fontsize=7.5,
+             va="baseline")
 
     X0, W, H = 0.135, 0.33, 0.20
     c, d, b = (fig.add_axes([X0, y, W, H]) for y in (0.735, 0.41, 0.085))

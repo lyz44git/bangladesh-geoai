@@ -9,24 +9,41 @@
  },
  "power": {
   "main parameters, full adjustment": {
-   "upazila clusters": 0.23263882713638492,
-   "district clusters": 0.1023385974336005
+   "upazila clusters": 0.2326388318909892,
+   "district clusters": 0.10233860030328572
   },
   "main parameters, half adjustment": {
-   "upazila clusters": 0.09414221340908951,
-   "district clusters": 0.06284081826480624
+   "upazila clusters": 0.09414221612596377,
+   "district clusters": 0.06284082035262438
   },
   "mean of 600 prior draws, full adjustment": {
-   "upazila clusters": 0.16971745097042232,
-   "district clusters": 0.08436883218189252
+   "upazila clusters": 0.16971745493307622,
+   "district clusters": 0.08436883471030021
   },
   "mean of 600 prior draws, half adjustment": {
-   "upazila clusters": 0.07901195049210152,
-   "district clusters": 0.05847757139290553
+   "upazila clusters": 0.07901195291422401,
+   "district clusters": 0.0584775733869103
   }
  },
  "se_needed_for_80pct_power": {
-  "main parameters": 0.021084512882090352,
-  "mean of 600 prior draws": 0.017152865286163423
+  "main parameters": 0.021084511240589084,
+  "mean of 600 prior draws": 0.017152863950754334
+ },
+ "minimum_detectable_effect_80pct_power": {
+  "upazila clusters": 0.13482637612270307,
+  "district clusters": 0.2480658089386493
+ },
+ "mde_relative_to_model_effect": {
+  "upazila clusters": 2.2824826567493197,
+  "district clusters": 4.199518839842313
+ },
+ "typical_treated_cell": {
+  "treatment_intensity_log_points": 0.4439484775066376,
+  "pixels_per_cell": 1600,
+  "baseline_built_pp": 0.3673160970211029,
+  "baseline_built_pixels": 5.8770575523376465,
+  "model_implied_effect_pp": 0.02622406099359254,
+  "model_implied_effect_pixels": 0.4195849758974806,
+  "model_implied_effect_relative_to_baseline_pct": 7.139371567504684
  }
 }
