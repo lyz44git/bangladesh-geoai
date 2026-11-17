@@ -162,7 +162,8 @@ def stage_cities():
     res = {"gbm": evaluate(names, lambda n, y: full_maps(n, y, "gbm", gbm))}
     unet = train_unet(names)
     res["unet"] = evaluate(names, lambda n, y: full_maps(n, y, "unet", unet))
-    # Out-of-time check: models trained on 2021 applied to the 2020 composite vs WorldCover 2020 (v100).
+    # The 2020 composite against WorldCover 2020 (v100). Out-of-time for the GBM, which is trained on 2021 only; the
+    # U-Net is trained on both seasons (UNET_TRAIN_YEARS), so for it this is a second in-time score on held-out blocks.
     res["gbm_2020"] = evaluate(names, lambda n, y: full_maps(n, 2020, "gbm", gbm))
     res["unet_2020"] = evaluate(names, lambda n, y: full_maps(n, 2020, "unet", unet))
     tab = pd.concat([d.assign(model=k) for k, d in res.items()])

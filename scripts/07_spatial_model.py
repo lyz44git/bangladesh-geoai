@@ -42,7 +42,9 @@ BD_POP_2022 = 169.83e6  # 2022 census total; HRSL is only used for relative shar
 # Main parameters (literature values) and the module-4 estimate the model is confronted with.
 # alpha_N: spending share on local non-traded goods and services (0 = one-sector model).
 MAIN = dict(sigma=5.0, alpha=0.75, alpha_N=0.30, kappa=1.0, eps=3.0, wage_sd=0.25)
-RF_COEF, RF_SE = 0.0596, 0.089  # spec (2), district-clustered SE (conservative)
+# Copied from outputs/tables/padma_did_results.csv: coefficient of specification (2) and its district-clustered
+# standard error (the conservative choice). Update both if 06_padma_causal.py is re-run.
+RF_COEF, RF_SE = 0.0596, 0.089
 
 
 def log(msg):

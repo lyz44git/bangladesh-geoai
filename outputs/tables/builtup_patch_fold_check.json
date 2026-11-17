@@ -1,0 +1,124 @@
+{
+  "note": "U-Net of the re-run described in the README; 'clean' excludes fold-0 pixels that lie inside a training or validation patch in either training year",
+  "results": {
+    "city_dhaka": {
+      "test_pixels": 1520000,
+      "share_in_training_patch": 0.07482105263157894,
+      "share_in_validation_patch": 0.024589473684210526,
+      "all_test_pixels": {
+        "n": 1520000,
+        "precision": 0.8556201319581735,
+        "recall": 0.771099984436967,
+        "f1": 0.8111643346477697
+      },
+      "clean_test_pixels": {
+        "n": 1368896,
+        "precision": 0.8530747284246621,
+        "recall": 0.766900272138333,
+        "f1": 0.8076954782090384
+      }
+    },
+    "city_chattogram": {
+      "test_pixels": 920000,
+      "share_in_training_patch": 0.06713043478260869,
+      "share_in_validation_patch": 0.012034782608695652,
+      "all_test_pixels": {
+        "n": 920000,
+        "precision": 0.8778563579499028,
+        "recall": 0.6723058996158991,
+        "f1": 0.7614532034753706
+      },
+      "clean_test_pixels": {
+        "n": 847168,
+        "precision": 0.8721480024117031,
+        "recall": 0.6654077086964942,
+        "f1": 0.7548786684428086
+      }
+    },
+    "city_khulna": {
+      "test_pixels": 500000,
+      "share_in_training_patch": 0.067072,
+      "share_in_validation_patch": 0.034304,
+      "all_test_pixels": {
+        "n": 500000,
+        "precision": 0.879812882331774,
+        "recall": 0.7741424802110818,
+        "f1": 0.823602066022906
+      },
+      "clean_test_pixels": {
+        "n": 449312,
+        "precision": 0.8850544374793797,
+        "recall": 0.7793271744814363,
+        "f1": 0.8288327256998086
+      }
+    },
+    "city_rajshahi": {
+      "test_pixels": 250000,
+      "share_in_training_patch": 0.101888,
+      "share_in_validation_patch": 0.020224,
+      "all_test_pixels": {
+        "n": 250000,
+        "precision": 0.8076874446832722,
+        "recall": 0.5300365084633256,
+        "f1": 0.6400480937828766
+      },
+      "clean_test_pixels": {
+        "n": 219472,
+        "precision": 0.8100764609503004,
+        "recall": 0.5427682737169518,
+        "f1": 0.6500136948781157
+      }
+    },
+    "city_sylhet": {
+      "test_pixels": 560000,
+      "share_in_training_patch": 0.06468571428571429,
+      "share_in_validation_patch": 0.016914285714285715,
+      "all_test_pixels": {
+        "n": 560000,
+        "precision": 0.8314636931551017,
+        "recall": 0.7121569529946493,
+        "f1": 0.7671997024916326
+      },
+      "clean_test_pixels": {
+        "n": 514304,
+        "precision": 0.8291210863824972,
+        "recall": 0.7114189539098913,
+        "f1": 0.7657736125143713
+      }
+    },
+    "city_barishal": {
+      "test_pixels": 320000,
+      "share_in_training_patch": 0.0618,
+      "share_in_validation_patch": 0.0336,
+      "all_test_pixels": {
+        "n": 320000,
+        "precision": 0.9105681945534013,
+        "recall": 0.8003349093774625,
+        "f1": 0.8519003931847967
+      },
+      "clean_test_pixels": {
+        "n": 289472,
+        "precision": 0.898444647758463,
+        "recall": 0.7770011868653567,
+        "f1": 0.8333215472738844
+      }
+    },
+    "pooled": {
+      "test_pixels": 4070000,
+      "share_in_training_patch": 0.07137493857493858,
+      "share_in_validation_patch": 0.02232923832923833,
+      "all_test_pixels": {
+        "n": 4070000,
+        "precision": 0.8593695396638815,
+        "recall": 0.7431013405856821,
+        "f1": 0.7970174869989245
+      },
+      "clean_test_pixels": {
+        "n": 3688624,
+        "precision": 0.8564398370376346,
+        "recall": 0.7390213057249709,
+        "f1": 0.7934098420554384
+      }
+    }
+  }
+}
