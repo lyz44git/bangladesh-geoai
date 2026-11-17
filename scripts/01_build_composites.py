@@ -1,4 +1,4 @@
-"""Build annual dry-season Sentinel-2 composites for every study area.
+"""Build annual dry-season Sentinel-2 composites for every study area, then fill orbit-coverage gaps.
 
   python scripts/01_build_composites.py cities    # 6 cities x 9 years, 20 m
   python scripts/01_build_composites.py padma     # Padma study region x 9 years, 30 m
@@ -37,20 +37,23 @@ def main(which):
         for y in years:
             for name, c in CFG["cities"].items():
                 g = grid_around(c["lon"], c["lat"], c["half_km"], CFG["city_res_m"])
-                composite.composite_grid(g, y, str(OUT / f"city_{name}_{y}.tif"), workers=24)
+                path = composite.composite_grid(g, y, str(OUT / f"city_{name}_{y}.tif"), workers=24)
+                composite.fill_gaps(path, y, workers=24)
     elif which == "padma":
         p = CFG["padma_region"]
         g = grid_from_lonlat(p["lon_min"], p["lat_min"], p["lon_max"], p["lat_max"], CFG["padma_res_m"])
         keep = country_filter()
         order = [2021] + [y for y in years if y != 2021]  # training year first
         for y in order:
-            composite.composite_grid(g, y, str(OUT / f"padma_{y}.tif"), chunk=1024, per_tile=5, workers=24,
-                                     keep_chunk=keep)
+            path = composite.composite_grid(g, y, str(OUT / f"padma_{y}.tif"), chunk=1024, per_tile=5, workers=24,
+                                            keep_chunk=keep)
+            composite.fill_gaps(path, y, chunk=1024, per_tile=5, workers=24)
     elif which == "national":
         n = CFG["national"]
         g = grid_from_lonlat(n["lon_min"], n["lat_min"], n["lon_max"], n["lat_max"], CFG["national_res_m"])
-        composite.composite_grid(g, 2020, str(OUT / "national_2020.tif"), chunk=1024, per_tile=5, workers=24,
-                                 keep_chunk=country_filter(buffer_km=3))
+        path = composite.composite_grid(g, 2020, str(OUT / "national_2020.tif"), chunk=1024, per_tile=5, workers=24,
+                                        keep_chunk=country_filter(buffer_km=3))
+        composite.fill_gaps(path, 2020, chunk=1024, per_tile=5, workers=24)
     else:
         raise SystemExit(__doc__)
 

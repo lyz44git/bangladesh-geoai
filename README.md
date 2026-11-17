@@ -62,7 +62,7 @@ precondition for the next:
 The wealth index also sets relative wages in the spatial model of step 4; the imagery model shows that this input
 can be largely reproduced from imagery out of area.
 
-![Relative Wealth Index by upazila; accuracy by feature set under spatial-block and random cross-validation; accuracy against a second poverty map; share of model gain by feature group](outputs/figures/wealth_maps_and_accuracy.png)
+![Wealth predicted from imagery for 26,556 grid cells out of area; upazila means of prediction against label; accuracy by feature set under spatial-block and random cross-validation; year-to-year noise of built-up maps under two compositing designs](outputs/figures/measurement.png)
 
 ## 2. Where change is large, cities grow at the edge
 
@@ -76,13 +76,13 @@ can be largely reproduced from imagery out of area.
 | Barishal | +72% | 61% |
 
 Edge expansion accounts for 50–64% of new built-up land, and radial density gradients flatten in every city with a
-measurable gradient. The cities add 4.0–9.5% to their built-up area each year. The rural areas the bridge reaches
+measurable gradient. In Dhaka and Chattogram the largest additions lie 4–7 km from the centre. The cities add 4.0–9.5% to their built-up area each year. The rural areas the bridge reaches
 start from 0.37% built-up, so any bridge effect on built-up land is small in absolute terms, a fact that matters in
 step 4.
 
 ![Built-up land in 2020 and land added by 2026 in six cities, each with a 10 km scale bar](outputs/figures/urban_change_maps.png)
 
-![Smoothed built-up area by city, density gradients in 2020 and 2026, and the share of pixels that flip back under two compositing methods](outputs/figures/urban_area_and_profiles.png)
+![Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city centre; density gradients in 2020 and 2026](outputs/figures/urban_area_and_profiles.png)
 
 ## 3. The bridge: no detectable effect on built-up land
 
@@ -105,7 +105,7 @@ cells. Effect of a one-log-point reduction on built-up share (percentage points)
 
 A null can mean that the bridge had no effect or that the test could not see one. Step 4 asks which.
 
-![Travel-time reduction to Dhaka by upazila; event-study estimates under three specifications; the coefficient under alternative choices](outputs/figures/padma_treatment_and_event_study.png)
+![Reduction in travel time to Dhaka on a 500 m grid; event-study estimates under three specifications; the coefficient under alternative choices](outputs/figures/padma_treatment_and_event_study.png)
 
 ## 4. The null is uninformative; the model implies a gain of +0.47%
 
@@ -178,8 +178,22 @@ python scripts/09_power.py                                    # reads committed 
 The pipeline runs on a four-CPU machine without a GPU. Raw data and intermediate rasters go to a git-ignored `data/`
 folder; result tables and figures are in `outputs/`.
 
-The figures in this README, the report and the atlas are drawn from the committed tables by
-`python figures/make_figure1.py` and `python figures/make_report_figures.py`; both need the GADM level-3 boundary file.
+The figures in this README, the report and the atlas are drawn by `python figures/make_figure1.py` and
+`python figures/make_report_figures.py`. Both need the GADM level-3 boundary file; the second also reads the pipeline
+rasters in `data/` for the wealth, travel-time and city maps, and falls back to upazila-level maps without them.
+
+**Reproduction check.** The pipeline was re-run from the raw data on a separate machine on 16 November 2026 for the six
+cities, the national composite and the wealth study (steps 1–2 and the travel-time model; the Padma-region composites
+and the causal and model steps were not re-run). Classifier scores reproduced within 0.005 and the headline wealth R²
+within 0.003; across all feature sets the largest change was +0.05 (Sentinel-2 statistics alone). City growth
+reproduced within 2.0 percentage points. The published tables are unchanged. The re-run also exposed two issues that are
+now fixed or documented:
+
+- `01_build_composites.py` now calls the orbit-aware gap filling (`composite.fill_gaps`) after each composite. Without
+  it, eastern Khulna had no clear observation in 2026 and its built-up area was understated by more than half.
+- On macOS, LightGBM, PyTorch and scikit-learn can load three different OpenMP runtimes, and U-Net training then hangs
+  at the first epoch. Linking all three to one runtime (for example PyTorch's `libomp.dylib`) avoids it; Linux is not
+  affected.
 
 ## Tests
 

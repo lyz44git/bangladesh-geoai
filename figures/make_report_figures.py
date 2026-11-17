@@ -1,13 +1,16 @@
 """Result figures of the README, the technical report and the atlas, in the style of Figure 1.
 
-Drawn from the committed result tables and the GADM 4.1 level-3 boundaries (gadm41_BGD_3.json, from
-gadm.org, not stored in this repository). The city change maps are recoloured from the pipeline's
-own rendering of the classified rasters (outputs/figures/urban_change_raw.png, written by
-scripts/03_urban_expansion.py), because the rasters themselves are not stored here.
+Headline numbers come from the committed result tables; boundaries from GADM 4.1 level 3 (gadm41_BGD_3.json,
+from gadm.org, not stored here). Four panels draw on pipeline rasters in the git-ignored data folder
+(GEOAI_DATA, default ./data): the imagery-predicted wealth map (data/wealth/predictions.parquet), the 500 m
+travel-time rasters (data/travel), and the city built-up maps and radial profiles (data/builtup,
+data/composites). Without them the script falls back to upazila-level maps and to the pipeline's own
+rendering of the city maps (outputs/figures/urban_change_raw.png).
 
-Usage: python figures/make_report_figures.py [path/to/gadm41_BGD_3.json]
+Usage: GEOAI_DATA=path/to/data python figures/make_report_figures.py [gadm41_BGD_3.json] [figure ...]
 """
 import json
+import os
 import sys
 import warnings
 from pathlib import Path
@@ -26,6 +29,8 @@ from make_figure1 import (AXIS, BLUE, BRIDGE, GADM3, GREEN, GREY, INCOME, INK, I
                           detach, leader, rows, style)
 
 FIG = ROOT / "outputs" / "figures"
+DATA = Path(os.environ.get("GEOAI_DATA", ROOT / "data"))
+LAND = "#f3f1ec"
 ATLAS = ROOT / "docs" / "atlas"
 SKY = "#56B4E9"
 TRACK = "#d9dde1"
@@ -66,23 +71,30 @@ class Maps:
         self.g = g
         self.coast = gpd.GeoSeries([q.exterior for q in getattr(merged, "geoms", [merged]) if q.area > 0.002])
 
-    def draw(self, ax, col, cmap, norm, extent=NATION, places=(), bridge=False, lw=0.12, fs=6.5):
+    def base(self, ax, lw=0.0):
         ax.set_facecolor(SEA)
-        self.g.plot(column=col, cmap=cmap, norm=norm, ax=ax, edgecolor="white", linewidth=lw)
-        self.coast.plot(ax=ax, color=AXIS, linewidth=0.4)
+        self.g.plot(ax=ax, color=LAND, edgecolor="white", linewidth=lw, zorder=1)
+
+    def finish(self, ax, extent=NATION, places=(), bridge=False, fs=6.5):
+        self.coast.plot(ax=ax, color=AXIS, linewidth=0.4, zorder=4)
         halo = [pe.withStroke(linewidth=1.6, foreground="white")]
         for name in places:
             x, y = PLACES[name]
-            ax.plot(x, y, marker="o", ms=2.4, mfc="white", mec=INK, mew=0.7)
+            ax.plot(x, y, marker="o", ms=2.4, mfc="white", mec=INK, mew=0.7, zorder=5)
             left = name in ("Chattogram", "Sylhet")
             ax.text(x + (-0.06 if left else 0.06), y + 0.02, name, fontsize=fs, ha="right" if left else "left",
-                    va="center", path_effects=halo)
+                    va="center", path_effects=halo, zorder=5)
         if bridge:
-            ax.plot(*BRIDGE, marker="s", ms=3.2, mfc=INK, mec="white", mew=0.7, zorder=5)
+            ax.plot(*BRIDGE, marker="s", ms=3.2, mfc=INK, mec="white", mew=0.7, zorder=6)
         ax.set_xlim(extent[0], extent[1]); ax.set_ylim(extent[2], extent[3]); ax.set_aspect(1 / 0.916)
-        ax.set_xticks([]); ax.set_yticks([])
-        for s in ax.spines.values():
-            s.set_visible(False)
+        ax.set_xticks([]); ax.set_yticks([]); ax.set_xlabel(""); ax.set_ylabel("")
+        for sp in ax.spines.values():
+            sp.set_visible(False)
+
+    def draw(self, ax, col, cmap, norm, extent=NATION, places=(), bridge=False, lw=0.12, fs=6.5):
+        ax.set_facecolor(SEA)
+        self.g.plot(column=col, cmap=cmap, norm=norm, ax=ax, edgecolor="white", linewidth=lw, zorder=1)
+        self.finish(ax, extent, places, bridge, fs)
 
     def bar(self, fig, ax, cmap, norm, label, ticks, box=(0.05, 0.09, 0.42, 0.017), extend="neither", fmt=None):
         cax = ax.inset_axes(box)
@@ -107,6 +119,58 @@ def dumbbell(ax, y, a, b, ca=GREY, cb=BLUE, open_a=True):
 def rowaxis(ax):
     ax.tick_params(axis="y", length=0)
     ax.spines["left"].set_visible(False); ax.spines["bottom"].set_position(("outward", 3))
+
+
+def tt_reduction(extent, step=0.004):
+    """Percentage cut in least-cost travel time to Dhaka (500 m rasters), resampled to a lon/lat grid."""
+    import rasterio
+    from rasterio.features import geometry_mask
+    from rasterio.transform import from_origin
+    from rasterio.warp import Resampling, reproject
+
+    with rasterio.open(DATA / "travel" / "tt_pre.tif") as src:
+        pre, tr, crs = src.read(1).astype("float32"), src.transform, src.crs
+    with rasterio.open(DATA / "travel" / "tt_post.tif") as src:
+        post = src.read(1).astype("float32")
+    with np.errstate(invalid="ignore", divide="ignore"):
+        red = np.where(pre > 0, 100 * (1 - post / pre), np.nan).astype("float32")
+    x0, x1, y0, y1 = extent
+    w, h = int(round((x1 - x0) / step)), int(round((y1 - y0) / step))
+    dtr = from_origin(x0, y1, step, step)
+    out = np.full((h, w), np.nan, "float32")
+    reproject(red, out, src_transform=tr, src_crs=crs, dst_transform=dtr, dst_crs="EPSG:4326",
+              resampling=Resampling.bilinear, src_nodata=np.nan, dst_nodata=np.nan)
+    return out, dtr
+
+
+def land_mask(M, shape, transform):
+    from rasterio.features import geometry_mask
+
+    return geometry_mask(M.g.geometry, shape, transform, invert=True)
+
+
+def city_rasters():
+    """Built-up masks (2020, 2026) and radial profiles from the pipeline rasters, using the urban-expansion code."""
+    import runpy
+
+    if not (DATA / "builtup").exists():
+        return None
+    m = runpy.run_path(str(ROOT / "scripts" / "03_urban_expansion.py"), run_name="figures")
+    g = m["load_city"].__globals__  # run_path returns a copy; patch the functions' own globals
+    g["PRED"], g["COMP"] = DATA / "builtup", DATA / "composites"
+    Y, MAIN = m["YEARS"], m["MAIN"]
+    out = {}
+    for name, c in json.loads((ROOT / "configs" / "aois.json").read_text())["cities"].items():
+        P, CL, tr, res = m["load_city"](name)
+        idx = [Y.index(y) for y in MAIN]
+        valid = np.isfinite(P[idx]).all(0) & (CL[idx] > 0).all(0)
+        S = m["temporal_smooth"](P, Y)
+        b0 = (S[Y.index(m["T0"])] >= 0.5) & valid
+        b1 = ((S[Y.index(m["T1"])] >= 0.5) & valid) | b0
+        r, s0 = m["radial_profile"](b0, tr, res, c["lon"], c["lat"], valid, max_km=c["half_km"])
+        _, s1 = m["radial_profile"](b1, tr, res, c["lon"], c["lat"], valid, max_km=c["half_km"])
+        out[name] = dict(b0=b0, b1=b1, valid=valid, r=r, s0=s0, s1=s1, res=res)
+    return out
 
 
 # ------------------------------------------------------------------ atlas: six national maps
@@ -161,12 +225,23 @@ def padma(M):
     S = json.loads((TB / "padma_sample_description.json").read_text())
     a = fig.add_axes([0.012, 0.03, 0.465, 0.905])
     norm = Normalize(0, 70)
-    M.draw(a, "tt_reduction_pct", ACCESS, norm, extent=SOUTHWEST_TALL, places=("Dhaka", "Khulna", "Barishal"),
-           bridge=True, lw=0.3)
+    raster = (DATA / "travel" / "tt_pre.tif").exists()
+    if raster:
+        M.base(a)
+        red, dtr = tt_reduction(SOUTHWEST_TALL)
+        red[~land_mask(M, red.shape, dtr)] = np.nan
+        x0, x1, y0, y1 = SOUTHWEST_TALL
+        a.imshow(red, extent=(x0, x0 + red.shape[1] * dtr.a, y1 + red.shape[0] * dtr.e, y1), cmap=ACCESS, norm=norm,
+                 interpolation="nearest", zorder=2)
+        M.finish(a, SOUTHWEST_TALL, places=("Dhaka", "Khulna", "Barishal"), bridge=True)
+    else:
+        M.draw(a, "tt_reduction_pct", ACCESS, norm, extent=SOUTHWEST_TALL, places=("Dhaka", "Khulna", "Barishal"),
+               bridge=True, lw=0.3)
     a.annotate("Padma Bridge", xy=BRIDGE, xytext=(89.05, 24.05), fontsize=6.5, va="center",
                arrowprops=dict(arrowstyle="-|>", lw=0.6, color=INK, shrinkB=2.5, mutation_scale=6))
     M.bar(fig, a, ACCESS, norm, "Modelled travel time to Dhaka cut (%)", [0, 10, 30, 50, 70], box=(0.05, 0.09, 0.46, 0.016))
-    a.text(0.05, 0.022, f'{S["n_cells"]:,} cells in {S["n_upazila"]} upazilas; map shows upazila means',
+    a.text(0.05, 0.022, "500 m grid, least-cost routes with and without the bridge" if raster else
+           f'{S["n_cells"]:,} cells in {S["n_upazila"]} upazilas; map shows upazila means',
            transform=a.transAxes, fontsize=6.5, color=INK2)
     fig.text(0.012, 0.957, "a", fontsize=10, fontweight="bold", va="bottom")
     fig.text(0.034, 0.9585, "Exposure: how much the bridge shortens the trip to Dhaka", fontsize=7.5, va="bottom")
@@ -302,173 +377,204 @@ def model(M):
     fig.savefig(FIG / "qse_padma.png", dpi=300)
 
 
-# ------------------------------------------------------------------ wealth mapping
-def wealth(M):
+# ------------------------------------------------------------------ step 1: measurement
+def measurement(M):
+    import pandas as pd
+
     fig = plt.figure(figsize=(7.2, 5.0), dpi=300)
     a = fig.add_axes([0.012, 0.03, 0.465, 0.905])
-    norm = Normalize(-0.4, 1.2)
-    M.draw(a, "rwi_meta", WEALTH, norm, places=PLACES, lw=0.15)
-    M.bar(fig, a, WEALTH, norm, "Relative Wealth Index, upazila mean", [-0.4, 0, 0.4, 0.8, 1.2], extend="max")
-    a.text(0.05, 0.022, "Label: Meta Relative Wealth Index, 26,544 grid cells", transform=a.transAxes, fontsize=6.5,
-           color=INK2)
+    norm = Normalize(-0.6, 1.2)
+    P = DATA / "wealth" / "predictions.parquet"
+    pts = pd.read_parquet(P) if P.exists() else None
+    if pts is not None:
+        M.base(a)
+        a.scatter(pts.longitude, pts.latitude, c=pts.rwi_pred_imagery_context, cmap=WEALTH, norm=norm, s=1.15,
+                  marker="s", lw=0, zorder=2, rasterized=True)
+        M.finish(a, places=PLACES)
+        title, note = ("Wealth predicted from imagery, out of area",
+                       f"{len(pts):,} grid cells; out-of-fold predictions, 50 km spatial blocks")
+    else:
+        M.draw(a, "rwi_meta", WEALTH, norm, places=PLACES, lw=0.15)
+        title, note = "The target: relative wealth across 544 upazilas", "Label: Meta Relative Wealth Index"
+    M.bar(fig, a, WEALTH, norm, "Relative Wealth Index" + (", predicted" if pts is not None else ""),
+          [-0.6, 0, 0.6, 1.2], extend="both")
+    a.text(0.05, 0.022, note, transform=a.transAxes, fontsize=6.5, color=INK2)
     fig.text(0.012, 0.957, "a", fontsize=10, fontweight="bold", va="bottom")
-    fig.text(0.034, 0.9585, "The target: relative wealth across 544 upazilas", fontsize=7.5, va="bottom")
+    fig.text(0.034, 0.9585, title, fontsize=7.5, va="bottom")
 
     Wr = rows(TB / "wealth_prediction_results.csv")
     names = {"context only: pop+travel time (gbm)": "Pop. + travel time", "s2_stats (gbm)": "Sentinel-2 statistics",
              "mosaiks (ridge)": "Random conv. features", "landcover (gbm)": "Land cover",
              "s2_stats+landcover (gbm)": "S2 + land cover", "imagery all: s2+lc+mosaiks50 (gbm)": "All imagery",
              "imagery + context (gbm)": "Imagery + context"}
-    get = lambda tgt, cv, col: {r["features"]: float(r[col]) for r in Wr if r["target"] == tgt and r["cv"].startswith(cv)}
-    sp, rd, cell = get("rwi", "spatial", "r2_upazila"), get("rwi", "random", "r2_upazila"), get("rwi", "spatial", "r2")
-    fm = get("flowminder_wipov2011", "spatial", "r2_upazila")
+    get = lambda cv: {r["features"]: float(r["r2_upazila"]) for r in Wr if r["target"] == "rwi" and r["cv"].startswith(cv)}  # noqa: E731
+    sp, rd = get("spatial"), get("random")
     order = sorted(names, key=lambda k: sp[k])
 
-    # b: all feature sets, upazila means, spatial-block against random folds
-    b = fig.add_axes([0.72, 0.56, 0.265, 0.375])
+    # b: upazila means, prediction against label
+    b = fig.add_axes([0.665, 0.70, 0.185, 0.235])
+    if pts is not None:
+        u = pts.groupby("GID_3")[["rwi", "rwi_pred_imagery_context"]].mean()
+        b.plot([-0.6, 1.6], [-0.6, 1.6], color=INK2, lw=0.6, ls=(0, (3, 3)))
+        b.scatter(u.rwi, u.rwi_pred_imagery_context, s=4, color=BLUE, lw=0.2, edgecolor="white", alpha=0.85)
+        b.set_xlim(-0.6, 1.6); b.set_ylim(-0.6, 1.6); b.set_xticks([0, 1]); b.set_yticks([0, 1])
+        b.set_aspect("equal", adjustable="box")
+        b.set_xlabel("Label, upazila mean", labelpad=2); b.set_ylabel("Predicted", labelpad=2)
+        b.text(1.55, -0.45, f"{len(u)} upazilas", ha="right", fontsize=6.5, color=INK2)
+        detach(b); panel(fig, b, "b", "Upazila means track the label", dx=-0.06)
+    else:
+        b.set_visible(False)
+
+    # c: accuracy by feature set, spatial-block against random folds
+    c = fig.add_axes([0.72, 0.33, 0.265, 0.215])
     for i, k in enumerate(order):
-        dumbbell(b, i, rd[k], sp[k])
-        b.text(sp[k] - 0.016, i, f"{sp[k]:.2f}", ha="right", va="center", fontsize=6.5,
+        dumbbell(c, i, rd[k], sp[k])
+        c.text(sp[k] - 0.016, i, f"{sp[k]:.2f}", ha="right", va="center", fontsize=6.3,
                fontweight="bold" if i == len(order) - 1 else "normal")
-    leader(b, (sp[order[1]], 1), (0.37, 2.0), "spatial-block CV", ha="left")
-    leader(b, (rd[order[0]], 0), (0.56, 0.0), "random CV", ha="left")
-    b.set_yticks(range(len(order)), [names[k] for k in order])
-    b.set_xlim(0.36, 0.95); b.set_ylim(-0.55, len(order) - 0.45); b.set_xticks([0.4, 0.6, 0.8])
-    b.set_xlabel("Out-of-sample R², upazila means", labelpad=2)
-    rowaxis(b); panel(fig, b, "b", "Random folds overstate accuracy for every feature set", dx=-0.223)
+    leader(c, (sp[order[1]], 1), (0.37, 2.55), "spatial-block CV", ha="left")
+    leader(c, (rd[order[0]], 0), (0.56, 0.0), "random CV", ha="left")
+    c.set_yticks(range(len(order)), [names[k] for k in order]); c.tick_params(axis="y", labelsize=6.3)
+    c.set_xlim(0.36, 0.95); c.set_ylim(-0.6, len(order) - 0.4); c.set_xticks([0.4, 0.6, 0.8])
+    c.set_xlabel("Out-of-sample R², upazila wealth", labelpad=2)
+    rowaxis(c); panel(fig, c, "c", "Random folds overstate accuracy", dx=-0.223)
 
-    # c: the same models scored against a second, independent poverty map
-    c = fig.add_axes([0.60, 0.085, 0.155, 0.31])
-    c.plot([0.38, 0.9], [0.38, 0.9], color=INK2, lw=0.6, ls=(0, (3, 3)))
-    for k in order:
-        c.plot(sp[k], fm[k], marker="o", ms=4.6, color=BLUE, mec="white", mew=0.6)
-    leader(c, (sp[order[0]], fm[order[0]]), (0.50, 0.40), names[order[0]], ha="left")
-    leader(c, (sp[order[-1]], fm[order[-1]]), (0.40, 0.86), names[order[-1]], ha="left")
-    c.set_xlim(0.38, 0.9); c.set_ylim(0.38, 0.9); c.set_xticks([0.4, 0.6, 0.8]); c.set_yticks([0.4, 0.6, 0.8])
-    c.set_aspect("equal", adjustable="box")
-    c.set_xlabel("R², Meta wealth index", labelpad=2); c.set_ylabel("R², 2011 poverty map", labelpad=2)
-    detach(c); panel(fig, c, "c", "Same ranking on a second label", dx=-0.07)
-
-    # d: where the predictive power comes from
-    d = fig.add_axes([0.865, 0.085, 0.12, 0.31])
-    imp = rows(TB / "wealth_feature_importance.csv")
-    lab = {"lc_built": "Built-up", "lc_crop": "Cropland", "lc_tree": "Tree cover"}
-    top = [(lab[r["feature"]], 100 * float(r["gain_share"]), BLUE) for r in imp[:3]]
-    rest = {"s2": "Sentinel-2 (61)", "mosaiks": "Conv. feat. (50)", "lc": "Other land cover"}
-    for g, name in rest.items():
-        tot = 100 * sum(float(r["gain_share"]) for r in imp[3:] if r["feature"].startswith(g + "_"))
-        top.append((name, tot, SKY if g != "lc" else SKY))
-    top = [t for t in top if t[1] > 0.5][::-1]
-    for i, (name, v, col) in enumerate(top):
-        d.barh(i, v, height=0.62, color=col)
-        d.text(v + 1.2, i, f"{v:.0f}", va="center", fontsize=6.5)
-    d.set_yticks(range(len(top)), [t[0] for t in top])
-    d.set_xlim(0, 40); d.set_ylim(-0.6, len(top) - 0.4); d.set_xticks([0, 20, 40])
-    d.set_xlabel("Share of model gain (%)", labelpad=2)
-    rowaxis(d); panel(fig, d, "d", "Built-up land leads", dx=-0.088)
-    fig.savefig(FIG / "wealth_maps_and_accuracy.png", dpi=300)
+    # d: year-to-year noise of built-up maps under the two compositing designs
+    d = fig.add_axes([0.72, 0.085, 0.265, 0.135])
+    U = sorted(rows(TB / "urban_expansion_summary.csv"), key=lambda r: float(r["reversal_rate_v1_least_cloudy"]))
+    for i, r in enumerate(U):
+        dumbbell(d, i, 100 * float(r["reversal_rate_v1_least_cloudy"]), 100 * float(r["reversal_rate"]))
+    top = U[-1]
+    leader(d, (100 * float(top["reversal_rate_v1_least_cloudy"]), len(U) - 1), (17.5, len(U) - 0.2), "least-cloudy",
+           ha="left")
+    leader(d, (100 * float(top["reversal_rate"]), len(U) - 1), (4.0, len(U) - 0.2), "balanced", ha="left")
+    d.set_yticks(range(len(U)), [r["city"].title() for r in U]); d.tick_params(axis="y", labelsize=6.3)
+    d.set_xlim(0, 27); d.set_ylim(-0.6, len(U) + 0.1); d.set_xticks([0, 10, 20])
+    d.set_xlabel("Built pixels that flip back next year (%)", labelpad=2)
+    rowaxis(d); panel(fig, d, "d", "Balanced compositing cuts noise", dx=-0.223)
+    fig.savefig(FIG / "measurement.png", dpi=300)
 
 
-# ------------------------------------------------------------------ urban expansion: six city maps
-def city_maps():
+# ------------------------------------------------------------------ step 2: six city maps
+C_OLD, C_NEW, C_BG = "#33415c", "#E8590C", "#f4f2ec"
+
+
+def city_maps(R=None):
     from PIL import Image
+
     cfg = json.loads((ROOT / "configs" / "aois.json").read_text())["cities"]
     U = {r["city"]: r for r in rows(TB / "urban_expansion_summary.csv")}
-    raw = np.asarray(Image.open(FIG / "urban_change_raw.png").convert("RGB")).astype(float) / 255
-    old, new, nodata = np.array([0.35] * 3), np.array([0.85, 0.15, 0.1]), np.array([0.8, 0.85, 0.95])
-    C_OLD, C_NEW, C_BG = (np.array(matplotlib.colors.to_rgb(c)) for c in ("#33415c", "#E8590C", "#f4f2ec"))
-    # unmix each pixel into shares of the two classes (the rendering averaged neighbouring pixels)
-    A = np.stack([1 - old, 1 - new], axis=1)
-    sol = np.clip((1 - raw.reshape(-1, 3)) @ np.linalg.pinv(A).T, 0, 1)
-    tot = np.maximum(sol.sum(1, keepdims=True), 1)
-    sol = sol / tot
-    img = (C_BG * (1 - sol.sum(1, keepdims=True)) + sol[:, :1] * C_OLD + sol[:, 1:] * C_NEW).reshape(raw.shape)
-    img[np.abs(raw - nodata).sum(2) < 0.06] = matplotlib.colors.to_rgb(SEA)
+    rgb = {k: np.array(matplotlib.colors.to_rgb(v)) for k, v in (("old", C_OLD), ("new", C_NEW), ("bg", C_BG),
+                                                                  ("sea", SEA))}
+    imgs = {}
+    if R:
+        for name, d in R.items():
+            img = np.ones(d["b0"].shape + (3,)) * rgb["bg"]
+            img[~d["valid"]] = rgb["sea"]
+            img[d["b0"]] = rgb["old"]
+            img[d["b1"] & ~d["b0"]] = rgb["new"]
+            imgs[name] = (img, d["b0"].shape[0])
+    else:  # recolour the pipeline's own 110 dpi rendering, unmixing the two classes per pixel
+        raw = np.asarray(Image.open(FIG / "urban_change_raw.png").convert("RGB")).astype(float) / 255
+        old, new, nodata = np.array([0.35] * 3), np.array([0.85, 0.15, 0.1]), np.array([0.8, 0.85, 0.95])
+        A = np.stack([1 - old, 1 - new], axis=1)
+        sol = np.clip((1 - raw.reshape(-1, 3)) @ np.linalg.pinv(A).T, 0, 1)
+        sol = sol / np.maximum(sol.sum(1, keepdims=True), 1)
+        img = (rgb["bg"] * (1 - sol.sum(1, keepdims=True)) + sol[:, :1] * rgb["old"] + sol[:, 1:] * rgb["new"]).reshape(raw.shape)
+        img[np.abs(raw - nodata).sum(2) < 0.06] = rgb["sea"]
+        for i, name in enumerate(cfg):
+            x0, y0 = 25 + 544 * (i % 3), 33 if i < 3 else 573
+            imgs[name] = (img[y0:y0 + 512, x0:x0 + 512], 512)
     fig = plt.figure(figsize=(7.2, 5.15), dpi=300)
-    names = list(cfg)
-    for i, name in enumerate(names):
-        x0, y0 = 25 + 544 * (i % 3), 33 if i < 3 else 573
+    halo = [pe.withStroke(linewidth=1.6, foreground=C_BG)]
+    for i, name in enumerate(cfg):
+        img, n = imgs[name]
         ax = fig.add_axes([0.008 + (i % 3) * 0.332, 0.505 - (i // 3) * 0.485, 0.318, 0.318 * 7.2 / 5.15])
-        ax.imshow(img[y0:y0 + 512, x0:x0 + 512], interpolation="lanczos")
+        ax.imshow(img, interpolation="antialiased", extent=(0, n, n, 0))
         ax.set_xticks([]); ax.set_yticks([])
-        for s in ax.spines.values():
-            s.set_visible(True); s.set_color("#c9ced3"); s.set_linewidth(0.5)
+        for sp in ax.spines.values():
+            sp.set_color("#c9ced3"); sp.set_linewidth(0.5)
         r, side = U[name], 2 * cfg[name]["half_km"]
-        px = 512 * 10 / side
-        ax.plot([488 - px, 488], [494, 494], color=INK, lw=1.0, solid_capstyle="butt")
-        ax.text(488 - px / 2, 486, "10 km", ha="center", va="bottom", fontsize=6, path_effects=[
-            pe.withStroke(linewidth=1.4, foreground=matplotlib.colors.to_hex(C_BG))])
-        b = ax.get_position()
-        fig.text(b.x0, b.y1 + 0.008, "abcdef"[i], fontsize=10, fontweight="bold", va="bottom")
-        fig.text(b.x0 + 0.022, b.y1 + 0.0095, f'{name.title()}  +{float(r["growth_pct"]):.0f}%', fontsize=7.5, va="bottom")
-        fig.text(b.x1, b.y1 + 0.0095, f'{float(r["built_km2_t0"]):.0f} → {float(r["built_km2_t1"]):.0f} km²',
+        px = n * 10 / side
+        ax.plot([0.953 * n - px, 0.953 * n], [0.965 * n] * 2, color=INK, lw=1.0, solid_capstyle="butt")
+        ax.text(0.953 * n - px / 2, 0.95 * n, "10 km", ha="center", va="bottom", fontsize=6, path_effects=halo)
+        bx = ax.get_position()
+        fig.text(bx.x0, bx.y1 + 0.008, "abcdef"[i], fontsize=10, fontweight="bold", va="bottom")
+        fig.text(bx.x0 + 0.022, bx.y1 + 0.0095, f'{name.title()}  +{float(r["growth_pct"]):.0f}%', fontsize=7.5,
+                 va="bottom")
+        fig.text(bx.x1, bx.y1 + 0.0095, f'{float(r["built_km2_t0"]):.0f} → {float(r["built_km2_t1"]):.0f} km²',
                  fontsize=6.5, va="bottom", ha="right", color=INK2)
         if i == 2:
             for j, (col, txt) in enumerate(((C_OLD, "built-up in 2020"), (C_NEW, "added 2020–2026"))):
-                ax.plot(26, 26 + j * 30, marker="s", ms=4, color=col, mec="white", mew=0.4)
-                ax.text(42, 26 + j * 30, txt, fontsize=6.5, va="center", path_effects=[
-                    pe.withStroke(linewidth=1.6, foreground=matplotlib.colors.to_hex(C_BG))])
-        ax.set_xlim(0, 511); ax.set_ylim(511, 0)
+                ax.plot(0.05 * n, (0.05 + 0.058 * j) * n, marker="s", ms=4, color=col, mec="white", mew=0.4)
+                ax.text(0.082 * n, (0.05 + 0.058 * j) * n, txt, fontsize=6.5, va="center", path_effects=halo)
+        ax.set_xlim(0, n); ax.set_ylim(n, 0)
     fig.savefig(FIG / "urban_change_maps.png", dpi=300)
 
 
-# ------------------------------------------------------------------ urban expansion: series, gradients, noise
-def urban_series():
+# ------------------------------------------------------------------ step 2: series, where growth happens, gradients
+def urban_series(R=None):
     fig = plt.figure(figsize=(7.2, 2.75), dpi=300)
     A = rows(TB / "urban_built_area_by_year.csv")
     U = rows(TB / "urban_expansion_summary.csv")
     cities = [r["city"] for r in sorted(U, key=lambda r: -float(r["growth_pct"]))]
-    a = fig.add_axes([0.065, 0.165, 0.285, 0.69])
+    hi = {cities[0]: BLUE, cities[-1]: INK}
+    a = fig.add_axes([0.065, 0.165, 0.235, 0.69])
     ends = {}
     for name in cities:
-        s = sorted((int(r["year"]), float(r["built_km2_smoothed"]), float(r["built_km2_raw"])) for r in A
-                   if r["city"] == name and r["built_km2_smoothed"])
-        base = s[0][1]
-        hi = name in (cities[0], cities[-1])
-        col = BLUE if name == cities[0] else (INK if name == cities[-1] else "#9aa7b4")
-        a.plot([p[0] for p in s], [100 * p[1] / base for p in s], color=col, lw=1.4 if hi else 0.9, zorder=3 if hi else 2)
-        ends[name] = (100 * s[-1][1] / base, col)
+        s = sorted((int(r["year"]), float(r["built_km2_smoothed"])) for r in A if r["city"] == name and r["built_km2_smoothed"])
+        col = hi.get(name, "#9aa7b4")
+        a.plot([p[0] for p in s], [100 * p[1] / s[0][1] for p in s], color=col, lw=1.4 if name in hi else 0.9,
+               zorder=3 if name in hi else 2)
+        ends[name] = (100 * s[-1][1] / s[0][1], col)
     ys = sorted(ends.items(), key=lambda kv: kv[1][0])
     pos = [v[0] for _, v in ys]
     for i in range(1, len(pos)):
-        pos[i] = max(pos[i], pos[i - 1] + 5.2)
+        pos[i] = max(pos[i], pos[i - 1] + 5.4)
     for (name, (y, col)), p in zip(ys, pos):
         a.plot([2026.05, 2026.3], [y, p], color=AXIS, lw=0.4, clip_on=False)
-        a.text(2026.36, p, name.title(), fontsize=6.5, va="center",
-               color=INK, fontweight="bold" if col == BLUE else "normal")
-    a.set_xlim(2020, 2026); a.set_ylim(98, 176); a.set_xticks([2020, 2022, 2024, 2026]); a.set_yticks([100, 125, 150, 175])
+        a.text(2026.36, p, name.title(), fontsize=6.5, va="center", fontweight="bold" if col == BLUE else "normal")
+    a.set_xlim(2020, 2026); a.set_ylim(98, 176); a.set_xticks([2020, 2023, 2026]); a.set_yticks([100, 125, 150, 175])
     a.set_ylabel("Built-up area (2020 = 100)")
-    detach(a); panel(fig, a, "a", "Built-up area, smoothed annual series", dx=-0.055, dy=0.03)
+    detach(a); panel(fig, a, "a", "Built-up area, smoothed", dx=-0.055, dy=0.03)
 
-    b = fig.add_axes([0.575, 0.165, 0.155, 0.69])
-    G = sorted([r for r in U if r["gradient_b_t0"]], key=lambda r: float(r["gradient_b_t0"]))
-    for i, r in enumerate(G):
-        dumbbell(b, i, float(r["gradient_b_t0"]), float(r["gradient_b_t1"]))
-    leader(b, (float(G[-1]["gradient_b_t0"]), len(G) - 1), (0.62, len(G) - 0.35), "2020", ha="left")
-    leader(b, (float(G[-1]["gradient_b_t1"]), len(G) - 1), (0.36, len(G) - 0.35), "2026", ha="left")
-    b.set_yticks(range(len(G)), [r["city"].title() for r in G])
-    b.set_xlim(0, 1.0); b.set_ylim(-0.55, len(G) - 0.1); b.set_xticks([0, 0.5, 1.0])
-    b.set_xlabel("Density gradient (per km)", labelpad=2)
-    rowaxis(b); panel(fig, b, "b", "Gradients flatten", dx=-0.075, dy=0.03)
+    b = fig.add_axes([0.45, 0.165, 0.25, 0.69])
+    if R:
+        for name in cities:
+            d = R[name]
+            col = {"dhaka": INK, "chattogram": GREEN}.get(name, "#b8c2cc")
+            b.plot(d["r"], 100 * (d["s1"] - d["s0"]), color=col, lw=1.3 if col != "#b8c2cc" else 0.8,
+                   zorder=3 if col != "#b8c2cc" else 2)
+        pk = {k: (R[k]["r"][np.nanargmax(R[k]["s1"] - R[k]["s0"])], 100 * np.nanmax(R[k]["s1"] - R[k]["s0"]))
+              for k in ("dhaka", "chattogram")}
+        leader(b, pk["chattogram"], (8.0, 15.5), "Chattogram", ha="left")
+        leader(b, pk["dhaka"], (11.0, 11.8), "Dhaka", ha="left")
+        leader(b, (1.2, 15.0), (3.2, 19.0), "four smaller cities", ha="left", color=INK2)
+        b.set_xlim(0, 25); b.set_ylim(0, 21); b.set_xticks([0, 5, 10, 15, 20, 25]); b.set_yticks([0, 10, 20])
+        b.set_xlabel("Distance from the city centre (km)", labelpad=2)
+        b.set_ylabel("Built-up share added\n2020–2026 (pp)")
+        detach(b); panel(fig, b, "b", "Large cities add most 4–7 km out", dx=-0.06, dy=0.03)
+    else:
+        b.set_visible(False)
 
     c = fig.add_axes([0.84, 0.165, 0.145, 0.69])
-    N = sorted(U, key=lambda r: float(r["reversal_rate_v1_least_cloudy"]))
-    for i, r in enumerate(N):
-        dumbbell(c, i, 100 * float(r["reversal_rate_v1_least_cloudy"]), 100 * float(r["reversal_rate"]))
-    leader(c, (100 * float(N[-1]["reversal_rate_v1_least_cloudy"]), len(N) - 1), (15.5, len(N) - 0.35), "least-cloudy", ha="left")
-    leader(c, (100 * float(N[-1]["reversal_rate"]), len(N) - 1), (2.5, len(N) - 0.35), "median", ha="left")
-    c.set_yticks(range(len(N)), [r["city"].title() for r in N])
-    c.set_xlim(0, 26); c.set_ylim(-0.55, len(N) - 0.1); c.set_xticks([0, 10, 20])
-    c.set_xlabel("Pixels that flip back (%)", labelpad=2)
-    rowaxis(c); panel(fig, c, "c", "Compositing cuts noise", dx=-0.085, dy=0.03)
+    G = sorted([r for r in U if r["gradient_b_t0"]], key=lambda r: float(r["gradient_b_t0"]))
+    for i, r in enumerate(G):
+        dumbbell(c, i, float(r["gradient_b_t0"]), float(r["gradient_b_t1"]))
+    leader(c, (float(G[-1]["gradient_b_t0"]), len(G) - 1), (0.62, len(G) - 0.35), "2020", ha="left")
+    leader(c, (float(G[-1]["gradient_b_t1"]), len(G) - 1), (0.30, len(G) - 0.35), "2026", ha="left")
+    c.set_yticks(range(len(G)), [r["city"].title() for r in G])
+    c.set_xlim(0, 1.0); c.set_ylim(-0.55, len(G) - 0.1); c.set_xticks([0, 0.5, 1.0])
+    c.set_xlabel("Density gradient (per km)", labelpad=2)
+    rowaxis(c); panel(fig, c, "c", "Gradients flatten", dx=-0.085, dy=0.03)
     fig.savefig(FIG / "urban_area_and_profiles.png", dpi=300)
 
 
 if __name__ == "__main__":
     style()
-    which = sys.argv[2:] or ["atlas", "southwest", "padma", "model", "wealth", "city_maps", "urban_series"]
-    M = Maps() if set(which) & {"atlas", "southwest", "padma", "model", "wealth"} else None
+    which = sys.argv[2:] or ["atlas", "southwest", "padma", "model", "measurement", "city_maps", "urban_series"]
+    M = Maps() if set(which) & {"atlas", "southwest", "padma", "model", "measurement"} else None
+    R = city_rasters() if set(which) & {"city_maps", "urban_series"} else None
     for name in which:
         f = globals()[name]
-        f(M) if name in ("atlas", "southwest", "padma", "model", "wealth") else f()
+        f(M) if name in ("atlas", "southwest", "padma", "model", "measurement") else f(R)
         plt.close("all")

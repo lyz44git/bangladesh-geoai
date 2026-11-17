@@ -141,7 +141,7 @@ Edge expansion accounts for 50–64% of new built-up land, infill for 18–40% a
 
 Three findings matter for practice. First, the built environment carries most of the signal: land-cover shares alone explain 35% of cell-level variation and the WorldCover built share accounts for 31% of model gain, while location variables add only 0.03. Imagery-based wealth proxies are, to a large extent, urbanisation proxies. Second, random cross-validation overstates accuracy in unsurveyed areas by about 0.05 at cell level and 0.08–0.09 at upazila level; targeting applications face exactly this extrapolation problem. Third, aggregation to upazilas lifts accuracy above 0.8, which is usable for geographic targeting, whereas cell-level accuracy is not sufficient for within-village targeting. Against the independent survey-based 2011 poverty layer (Spearman 0.41 with the RWI), conclusions are unchanged (imagery + context: 0.47 cell, 0.81 upazila).
 
-![Figure 2. Relative wealth by upazila, accuracy by feature set and validation scheme, and feature importance.](../outputs/figures/wealth_maps_and_accuracy.png)
+![Figure 2. Wealth predicted from imagery out of area, prediction against label by upazila, accuracy by feature set and validation scheme, and year-to-year noise under two compositing designs.](../outputs/figures/measurement.png)
 
 ### 4.4 The Padma Bridge: causal evidence
 
@@ -164,7 +164,7 @@ The negative coefficient in specification (1) is selection on trends: places wit
 
 The 2018–2019 archive cannot be used to extend the pre-period: it comes from a different processing baseline, pre-period coefficients jump to +1.9 to +2.8 points, and a placebo "opening in 2020" fails for measurement rather than identification reasons.
 
-![Figure 3. Travel-time reduction by upazila, event-study estimates and robustness of the coefficient.](../outputs/figures/padma_treatment_and_event_study.png)
+![Figure 3. Travel-time reduction on a 500 m grid, event-study estimates and robustness of the coefficient.](../outputs/figures/padma_treatment_and_event_study.png)
 
 A specification error found during the work is worth recording: when baseline-built bins were first computed by ranking observations rather than cells, tied zero-built cells moved between bins across years and produced a spurious positive effect of +0.20 points (SE 0.08). Defining bins per cell removed it.
 
