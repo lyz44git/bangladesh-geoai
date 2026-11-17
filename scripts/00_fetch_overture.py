@@ -10,9 +10,11 @@ import pyarrow.parquet as pq
 
 RELEASE = sys.argv[1] if len(sys.argv) > 1 else "2026-10-21.0"
 OUT = "data/raw/overture/bgd_segments_major.parquet"
-proxy = urlparse(os.environ["HTTPS_PROXY"])
-s3 = pafs.S3FileSystem(anonymous=True, region="us-west-2",
-                       proxy_options={"scheme": "http", "host": proxy.hostname, "port": proxy.port})
+_kw = {}
+if os.environ.get("HTTPS_PROXY"):  # use a proxy only when one is configured
+    proxy = urlparse(os.environ["HTTPS_PROXY"])
+    _kw["proxy_options"] = {"scheme": "http", "host": proxy.hostname, "port": proxy.port}
+s3 = pafs.S3FileSystem(anonymous=True, region="us-west-2", **_kw)
 path = f"overturemaps-us-west-2/release/{RELEASE}/theme=transportation/type=segment/"
 t = time.time()
 dset = ds.dataset(path, filesystem=s3, format="parquet")
