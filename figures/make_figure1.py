@@ -1,4 +1,5 @@
-"""Figure 1 of the README: a map of the model-implied income change with three supporting panels.
+"""Figure 1 of the README: the four steps of the study, measurement (a), description (b), evaluation (c) and
+interpretation (d), with the model map as the large panel.
 
 Drawn from the committed result tables. The map needs the GADM 4.1 level-3 boundaries of Bangladesh
 (gadm41_BGD_3.json, from gadm.org), which are not stored in this repository.
@@ -53,7 +54,7 @@ def detach(ax):
         ax.spines[side].set_position(("outward", 3))
 
 
-def letter(fig, ax, s, title, x=0.497):
+def letter(fig, ax, s, title, x=0.012):
     box = ax.get_position()
     fig.text(x, box.y1 + 0.022, s, fontsize=10, fontweight="bold", va="bottom")
     fig.text(x + 0.022, box.y1 + 0.0235, title, fontsize=7.5, va="bottom")
@@ -73,7 +74,7 @@ def draw():
     g = gpd.read_file(GADM3)[["GID_3", "geometry"]]
     g = g[g.GID_3.isin(U)].copy()
     g["inc"] = [float(U[k]["real_income_sr_pct"]) for k in g.GID_3]
-    a = fig.add_axes([0.012, 0.03, 0.465, 0.905])
+    a = fig.add_axes([0.515, 0.03, 0.475, 0.905])
     a.set_facecolor(SEA)
     g.plot(column="inc", cmap=INCOME, norm=NORM, ax=a, edgecolor="white", linewidth=0.15)
     with warnings.catch_warnings():
@@ -93,7 +94,7 @@ def draw():
     a.set_xticks([]); a.set_yticks([])
     for s in a.spines.values():
         s.set_visible(False)
-    cax = a.inset_axes([0.05, 0.075, 0.42, 0.016])
+    cax = a.inset_axes([0.05, 0.10, 0.42, 0.016])
     cb = fig.colorbar(matplotlib.cm.ScalarMappable(norm=NORM, cmap=INCOME), cax=cax, orientation="horizontal",
                       ticks=[-1, 0, 1, 2, 3, 4], extend="max")
     cb.outline.set_visible(False); cb.ax.tick_params(length=2, width=0.5, labelsize=6.5, pad=1.5)
@@ -109,12 +110,12 @@ def draw():
     ins.set_ylabel("Income (%)", fontsize=6.5, labelpad=1.5)
     ins.set_xticks([0, 35, 70]); ins.set_yticks([0, 4, 8]); ins.tick_params(labelsize=6, length=1.8, pad=1.5)
     detach(ins)
-    fig.text(0.012, 0.957, "a", fontsize=10, fontweight="bold", va="bottom")
-    fig.text(0.034, 0.9585, f"Who gains from the bridge: spatial equilibrium model, {len(g)} upazilas", fontsize=7.5,
+    fig.text(0.515, 0.957, "d", fontsize=10, fontweight="bold", va="bottom")
+    fig.text(0.537, 0.9585, f"Model: welfare +{Q['welfare_sr_pct']:.2f}%, gains in the south-west", fontsize=7.5,
              va="bottom")
 
-    X0, W, H = 0.60, 0.385, 0.20
-    b, c, d = (fig.add_axes([X0, y, W, H]) for y in (0.735, 0.41, 0.085))
+    X0, W, H = 0.135, 0.33, 0.20
+    c, d, b = (fig.add_axes([X0, y, W, H]) for y in (0.735, 0.41, 0.085))
 
     # ---- b: event study, naive against controlled, shaded 95% intervals
     E = [r for r in rows(TB / "padma_event_study.csv") if r["sample"].startswith("2020-2026")]
@@ -133,7 +134,7 @@ def draw():
     leader(b, (2024, series["(2)"][-3][1]), (2022.65, 0.56), "Baseline-density trends controlled", ha="left")
     b.set_xlim(2019.85, 2026.15); b.set_ylim(-2.0, 0.7); b.set_xticks(range(2020, 2027)); b.set_yticks([-2, -1, 0])
     b.set_ylabel("Built-up share\n(pp per log point)")
-    detach(b); letter(fig, b, "b", "No detectable effect on built-up land, 34,626 cells")
+    detach(b); letter(fig, b, "c", "Bridge: no detectable effect; power only 8–23%")
 
     # ---- c: wealth prediction by feature set, spatial-block against random cross-validation
     Wr = [r for r in rows(TB / "wealth_prediction_results.csv") if r["target"] == "rwi"]
@@ -149,13 +150,13 @@ def draw():
         c.text(sp[k] - 0.016, i, f"{sp[k]:.2f}", ha="right", va="center", fontsize=6.5,
                fontweight="bold" if i == len(order) - 1 else "normal")
     top = len(order) - 1
-    leader(c, (sp[order[0]], 0), (0.52, 0.95), "50 km spatial-\nblock CV", linespacing=1.1, ha="left")
+    leader(c, (sp[order[0]], 0), (0.405, 1.62), "50 km spatial-\nblock CV", linespacing=1.1, ha="left")
     leader(c, (rd[order[0]], 0), (0.52, 0.0), "random CV", ha="left")
     c.set_yticks(range(len(order)), [names[k] for k in order]); c.tick_params(axis="y", length=0)
     c.set_xlim(0.38, 0.95); c.set_ylim(-0.55, top + 0.55); c.set_xticks([0.4, 0.6, 0.8])
     c.set_xlabel("Out-of-sample R², upazila wealth", labelpad=2)
     c.spines["left"].set_visible(False); c.spines["bottom"].set_position(("outward", 3))
-    letter(fig, c, "c", "Imagery predicts wealth out of area; random CV overstates it")
+    letter(fig, c, "a", "Imagery predicts upazila wealth, R² 0.83")
 
     # ---- d: built-up growth by city and where the new building is
     U0 = sorted(rows(TB / "urban_expansion_summary.csv"), key=lambda r: float(r["growth_pct"]))
@@ -174,7 +175,7 @@ def draw():
     d.set_xlim(0, 82); d.set_ylim(-0.6, len(U0) + 0.25); d.set_xticks([0, 20, 40, 60, 80])
     d.set_xlabel("Growth in built-up area, 2020–2026 (%)", labelpad=2)
     d.spines["left"].set_visible(False); d.spines["bottom"].set_position(("outward", 3))
-    letter(fig, d, "d", "Cities grew 27–72%, mostly at the urban edge")
+    letter(fig, d, "b", "Cities grew 27–72%, mostly at the edge")
     return fig
 
 
