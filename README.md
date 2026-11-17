@@ -164,7 +164,7 @@ Randomization p-values permute upazila-mean exposure across upazilas within divi
 - **The negative naive estimate reflects selection on trends** (Figure 5b). Treated areas are far more rural (0.37% built-up before
   opening against 2.22%) and add fewer percentage points each year. Once trends are allowed to differ by baseline
   density, the two pre-period coefficients are close to zero (−0.015 and −0.038, with standard errors of 0.038 and 0.064)
-  and the pooled estimate is a null. With only two comparable pre-periods, this is a limited test of parallel trends.
+  and the pooled estimate is a null. With only two pre-period coefficients, this is a limited test of parallel trends.
 - **The null holds in every continuous-treatment variant** (Figure 5c): alternative ferry speeds, the outcome defined
   as mean probability, the exclusion of cells near the bridge or near Dhaka, and the rural subsample. Year by year,
   the coefficient is −0.15 in 2023 and between +0.08 and +0.12 in 2024–2026; only 2023 and 2024 are individually
@@ -300,24 +300,16 @@ a change of known magnitude, and compute the minimum detectable effect before in
 
 ## Limitations
 
-- Built-up accuracy is measured against ESA WorldCover, itself a satellite-derived product, rather than against
-  ground survey.
-- Wealth labels are model-based gridded estimates rather than household survey microdata, and the Relative Wealth
-  Index itself draws in part on satellite imagery; R² therefore measures agreement with the index.
-- The U-Net is trained on both labeled seasons (2020 and 2021), so no out-of-time test of it is available; the
-  temporal-consistency diagnostics of step 1 are the only check on other years.
-- The unsupervised stages of the wealth pipeline (the random convolutional filters and the 50 principal components) are
-  fitted on all tiles before cross-validation. They do not use the labels, but the held-out blocks are not strictly
-  unseen by them. Upazilas can also span more than one 50 km block, so an upazila mean can combine cells predicted
-  in different folds.
-- The positive control in step 2 is qualitative: city growth rates are not benchmarked against an independent series.
-- The 2018–2019 Sentinel-2 archive comes from a different processing baseline and cannot extend the pre-period; a
-  placebo opening in 2020 fails for that measurement reason.
-- Treatment varies smoothly over space, and the Dhaka–Mawa–Bhanga expressway (2020) and the Padma rail link
-  (2023–24) cannot be separated from the bridge.
-- The spatial model is static, covers goods trade only and is calibrated rather than estimated; its welfare figures
-  exclude passenger time savings and commuting. The model-implied coefficient is a cross-sectional projection on
-  upazila-mean exposure, not the same regression as the estimate, and the model step was not part of the re-run.
+- **Measurement.** Built-up accuracy is measured against ESA WorldCover and wealth accuracy against the Relative
+  Wealth Index. Both are satellite- or model-derived products rather than ground or household surveys, so F1 and R²
+  measure agreement with those products.
+- **Description.** The city growth rates are not benchmarked against an independent series, and the maps record
+  horizontal expansion only: growth through taller buildings is not observed.
+- **Evaluation.** Treatment varies smoothly over space, and the Dhaka–Mawa–Bhanga expressway (2020) and the Padma rail
+  link (2023–24) cannot be separated from the bridge. Only three comparable pre-opening seasons exist (2020–2022),
+  because the 2018–2019 archive comes from a different processing baseline.
+- **Interpretation.** The spatial model is static, covers goods trade only and is calibrated rather than estimated.
+  Its welfare figures exclude passenger time savings and commuting, and the evaluation is too imprecise to test them.
 
 ## Code map
 
