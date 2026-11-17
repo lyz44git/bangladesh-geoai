@@ -3,12 +3,13 @@
 [![tests](https://github.com/lyz44git/bangladesh-geoai/actions/workflows/tests.yml/badge.svg)](https://github.com/lyz44git/bangladesh-geoai/actions/workflows/tests.yml)
 
 **Summary.** Four years after the Padma Bridge opened, satellite imagery shows no detectable effect of the bridge on
-built-up land. This study shows why that finding says little about the bridge. A spatial equilibrium model calibrated on
-the same data implies an effect of under half a 30 m pixel in a typical 1.2 km cell, and the evaluation design could
-only have detected an effect two to four times larger (power of 8–23%). The imagery is not the weak link: it maps
-built-up land with F1 = 0.80, registers growth of 27–72% in the six largest cities, and predicts sub-district wealth
-out of area with R² = 0.83. The model puts the national welfare gain from the bridge at +0.47%, three-quarters of it
-going to the 19% of the population in the upazilas where travel time to Dhaka fell by about 10% or more.
+built-up land. This study demonstrates that the null result is uninformative about an effect of the size a calibrated
+spatial equilibrium model predicts. The model implies an effect equivalent to less than half of one 30 m pixel in a
+typical 1.2 km cell, whereas the evaluation design can detect only effects two to four times larger (power of 8–23%).
+The measurement itself is adequate: the imagery maps built-up land with F1 = 0.80, registers growth of 27–72% in the
+six largest cities, and predicts sub-district wealth out of area with R² = 0.83. The model places the national welfare
+gain from the bridge at +0.47%, of which three-quarters accrues to the 19% of the population in upazilas where travel
+time to Dhaka fell by about 10% or more.
 
 <img src="figures/figure1.png" alt="Four panels following the study's four steps: wealth-prediction accuracy by feature set; built-up growth in six cities; event study of the bridge's effect on built-up land; map of model-implied income change by upazila." width="100%">
 
@@ -32,21 +33,22 @@ hours of queuing and connected the southwestern divisions to Dhaka. Ex-ante appr
 above 1%. Household surveys that could test this projection become available only years later, whereas satellite
 imagery is free, annual and covers every upazila.
 
-The study asks whether such imagery can support an early evaluation. It proceeds as a measurement study would:
-validate the instrument, confirm that it registers change where change is expected, apply it to the bridge, and then
-ask whether the test could have detected the effect a model predicts.
+The study asks whether such imagery can support an early evaluation. The design follows the logic of measurement
+validation: establish the accuracy of the measure, confirm that it registers change where change is expected, apply it
+to the bridge, and then determine whether the test could have detected the effect that a model predicts.
 
 | Step | Question | Approach | Answer |
 |---|---|---|---|
-| 1. Measure | Is the instrument accurate? | U-Net trained on WorldCover labels; wealth prediction under 50 km spatial-block cross-validation | Yes, for city monitoring and upazila-level targeting |
+| 1. Measure | Is the measure accurate? | U-Net trained on WorldCover labels; wealth prediction under 50 km spatial-block cross-validation | Yes, for city monitoring and upazila-level targeting |
 | 2. Describe | Does it register change where rapid change is expected? | Built-up area in the six largest cities, 2020–2026 | Yes: growth of 27–72%, mostly at the urban edge |
-| 3. Evaluate | Does it register a change where the bridge shortened travel? | Continuous-treatment difference-in-differences and event study, 34,626 cells × 7 seasons | No detectable effect once selection on trends is removed |
-| 4. Interpret | Could it have? | Two-sector spatial equilibrium model of 544 upazilas; minimum detectable effect and power of the design | No: the design detects only effects 2–4 times the model's prediction; the model implies a welfare gain of +0.47% |
+| 3. Evaluate | Does it register a change where the bridge reduced travel time? | Continuous-treatment difference-in-differences and event study, 34,626 cells × 7 seasons | No detectable effect once selection on trends is removed |
+| 4. Interpret | Could the design have detected the expected effect? | Two-sector spatial equilibrium model of 544 upazilas; minimum detectable effect and power of the design | No: the minimum detectable effect is 2–4 times the model-implied effect; the model implies a welfare gain of +0.47% |
 
 ## 1. Measurement: accuracy is sufficient for monitoring and targeting
 
 Built-up maps are accurate at city scale and stable from year to year once compositing removes seasonal variation,
-and imagery predicts upazila wealth in areas the model has not seen.
+and imagery predicts upazila wealth in areas excluded from training. Accuracy is measured against ESA WorldCover for
+built-up land and against the Meta Relative Wealth Index for wealth.
 
 | Built-up classifier, six cities pooled (spatially held-out blocks) | Precision | Recall | F1 |
 |---|---|---|---|
@@ -64,19 +66,20 @@ and imagery predicts upazila wealth in areas the model has not seen.
   contaminate the event study in step 3.
 - **Accuracy declines where settlement is sparse.** In the rural Padma region (1.3% built-up), the U-Net reaches
   F1 = 0.66 (precision 0.79, recall 0.56).
-- **Random cross-validation overstates wealth accuracy.** The spatial-block figures are the ones that apply to areas
-  without labels. In the best imagery model, built-up land cover alone accounts for 31% of the gain, so the wealth map
-  is to a large extent a map of the built environment.
+- **Random cross-validation overstates wealth accuracy.** The spatial-block figures are the relevant ones for areas
+  without labels. In the best imagery model, built-up land cover alone accounts for 31% of the gain, so predicted
+  wealth largely reflects the built environment.
 
-The wealth index also sets relative wages in the spatial model of step 4. The imagery model shows that this input can
-be largely reproduced from imagery out of area.
+The wealth index also sets relative wages in the spatial model of step 4. The imagery model indicates that this input
+can be largely reproduced from imagery out of area.
 
 ![Wealth predicted from imagery for 26,556 grid cells out of area; upazila means of prediction against label; accuracy by feature set under spatial-block and random cross-validation; year-to-year noise of built-up maps under two compositing designs](outputs/figures/measurement.png)
 
 ## 2. Description: cities grew 27–72%, mostly at the edge
 
-Applied to the six largest cities, where rapid growth is expected, the same pipeline registers growth of 27–72% in six
-years. The cities serve as a positive control for step 3: the instrument does register change where change is large.
+Applied to the six largest cities, where rapid growth is expected, the same pipeline registers growth of 27–72% over
+six years. The cities serve as a positive control for step 3: they establish that the measure registers change where
+change is large.
 
 | City | Built-up growth, 2020–2026 | Share of new built-up land at the edge |
 |---|---|---|
@@ -90,8 +93,8 @@ years. The cities serve as a positive control for step 3: the instrument does re
 Edge expansion accounts for 50–64% of new built-up land, and radial density gradients flatten in every city with a
 measurable gradient. In Dhaka and Chattogram the largest additions lie 4–7 km from the center.
 
-The contrast with the bridge corridor matters for what follows. Built-up area in the six cities grows by 4.0–9.5% a
-year from a large base. The rural areas the bridge reaches start from 0.37% built-up, so even a large proportional
+The contrast with the bridge corridor is material to step 4. Built-up area in the six cities grows by 4.0–9.5% a year
+from a large base. The rural areas served by the bridge start from 0.37% built-up, so even a large proportional
 response adds very little built-up land in absolute terms.
 
 ![Built-up land in 2020 and land added by 2026 in six cities, each with a 10 km scale bar](outputs/figures/urban_change_maps.png)
@@ -100,8 +103,8 @@ response adds very little built-up land in absolute terms.
 
 ## 3. Evaluation: no detectable effect of the bridge on built-up land
 
-In the four years after opening, areas whose trip to Dhaka became shorter did not add built-up land detectably faster
-than comparable areas. Treatment is the modeled reduction in travel time to Dhaka (log points), which varies
+In the four years after opening, areas with larger reductions in travel time to Dhaka did not add built-up land
+detectably faster than comparable areas. Treatment is the modeled reduction in travel time to Dhaka (log points), which varies
 continuously across 34,626 cells. The table gives the effect of a one-log-point reduction on built-up share, in
 percentage points.
 
@@ -114,112 +117,129 @@ percentage points.
 
 - **The negative naive estimate reflects selection on trends.** Treated areas are far more rural (0.37% built-up before
   opening against 2.22%) and add fewer percentage points each year. Once trends are allowed to differ by baseline
-  density, the pre-trends disappear and the estimate is a null.
-- **The null is robust** to ferry speed, the outcome definition, and dropping cells near the bridge or near Dhaka. A
-  binary-treatment version of (2) is positive (0.097, CI 0.03 to 0.17) but does not survive district clustering or
-  randomization inference.
+  density, the pre-trends are absent and the estimate is a null.
+- **The null is robust** to the assumed ferry speed, the outcome definition, and the exclusion of cells near the
+  bridge or near Dhaka. A binary-treatment version of (2) is positive (0.097, CI 0.03 to 0.17) but is not robust to
+  district clustering or randomization inference.
 
-A null has two possible readings: the bridge did not change where building happens, or it did and the change is too
-small for this design to detect. Step 4 uses a spatial model to tell them apart.
+A null estimate admits two interpretations: either the bridge did not alter where built-up land is added, or the
+response is too small for this design to detect. Step 4 uses a spatial equilibrium model to distinguish between them.
 
 ![Reduction in travel time to Dhaka on a 500 m grid; event-study estimates under three specifications; the coefficient under alternative choices](outputs/figures/padma_treatment_and_event_study.png)
 
-## 4. Interpretation: the effect is too small to detect, and the model implies a gain of +0.47%
+## 4. Interpretation: the model-implied effect is below the detection threshold, and the implied welfare gain is +0.47%
 
-A spatial model predicts an effect on built-up land of almost exactly the size estimated, and that effect is far below
-what the design can detect. The null is therefore uninformative about the bridge.
+A spatial equilibrium model implies an effect on built-up land almost identical to the point estimate and well below
+the minimum detectable effect of the design. The null is therefore uninformative about an effect of the predicted
+size, although it does exclude substantially larger ones.
 
-- **What the model predicts.** At full long-run adjustment the model implies a coefficient of 0.059, almost exactly the
-  point estimate of 0.060. For a typical treated cell this is 0.026 percentage points of built-up share: about 0.4 of
-  one 30 m pixel in a cell of 1,600 pixels, of which about 6 were built-up before the bridge.
-- **What the design can detect.** With 80% power the design detects a coefficient of 0.13 with upazila clustering and
-  0.25 with district clustering, 2.3 and 4.2 times the model's prediction. Against the prediction itself, power is
-  17–23% and 8–10%.
-- **Welfare.** National welfare rises by 0.47% at the main parameters (0.30–0.79% across the parameter grid). Omitting
-  the local non-traded sector raises the gain to 0.79%, about 70% higher.
-- **Who gains.** The 19% of the population in treated upazilas receives 75% of the total gain: real income rises 1.9%
-  there and 0.15% elsewhere. The gains do not favor the poor. By wealth fifth of the population, real income rises
-  0.27% in the poorest fifth, 0.58–0.61% in the third and fourth, and 0.43% in the richest. Upazilas holding 29% of
-  the population lose slightly through trade diversion (−0.16% on average), most of them in Rajshahi and Rangpur, and
-  61% of the poorest fifth lives in them.
+- **Model-implied effect.** At full long-run adjustment the model implies a coefficient of 0.059, against a point
+  estimate of 0.060. The implied coefficient is obtained by regressing the model's predicted change in built-up share
+  on treatment intensity across the same region, so general-equilibrium effects on comparison areas are reflected in
+  it. For a cell at the mean treatment intensity of treated cells (travel-time reduction above about 5%), this
+  corresponds to 0.026 percentage points of built-up share: about 0.4 of one 30 m pixel in a cell of 1,600 pixels, of
+  which about 6 were built-up before the bridge.
+- **Detection threshold.** At 80% power in a two-sided 5% test, the minimum detectable coefficient is 0.13 with
+  upazila clustering and 0.25 with district clustering, 2.3 and 4.2 times the model-implied value. Power against the
+  model-implied value is 17–23% and 8–10% respectively, and 6–9% if only half of the long-run adjustment has occurred.
+  The estimate does exclude coefficients above 0.15 (upazila clustering), about 2.6 times the model-implied value.
+- **Welfare.** National welfare rises by 0.47% at the main parameters (0.30–0.79% across the parameter grid). The
+  estimate covers goods trade only and excludes passenger time savings and commuting. Omitting the local non-traded
+  sector raises the gain to 0.79%, about 70% higher.
+- **Incidence.** The 19% of the population in treated upazilas (travel-time reduction of about 10% or more) receives
+  75% of the total gain: real income rises by 1.9% there and by 0.15% elsewhere. The gains are not progressive. With
+  upazilas ordered by the Relative Wealth Index into fifths of the population, real income rises by 0.27% in the
+  poorest fifth, 0.58–0.61% in the third and fourth, and 0.43% in the richest. Upazilas holding 29% of the population
+  incur small losses through trade diversion (population-weighted mean −0.16%), most of them in Rajshahi and Rangpur;
+  61% of the poorest fifth lives in such upazilas. The index also sets baseline wages in the model, so the ranking is
+  not independent of the model's inputs.
 
-![Long-run population change by upazila with real income gain by wealth fifth; welfare gain across parameter values; model-implied coefficient, estimates and smallest detectable effect; the model-implied effect in a typical treated cell, in pixels](outputs/figures/qse_padma.png)
+![Long-run population change by upazila with real income gain by wealth fifth; welfare gain across parameter values; model-implied coefficient, estimates and minimum detectable effect; the model-implied effect in a typical treated cell, in pixels](outputs/figures/qse_padma.png)
 
-## Takeaways
+## Conclusions
 
-### What the study shows
+### Principal findings
 
-1. **Measurement works.** Free imagery maps built-up land (F1 = 0.80) and upazila wealth (out-of-area R² = 0.83)
-   accurately enough for annual city monitoring and for allocating resources across upazilas.
-2. **Early evaluation does not, yet.** In the bridge corridor the expected effect is under half a pixel per cell, and
-   the design detects only effects two to four times larger. The null is a statement about the design, not about the
-   bridge.
-3. **The model's answer is a modest and uneven gain.** National welfare rises by 0.47%. Three-quarters of the gain goes
-   to the 19% of the population nearest the bridge, and upazilas holding 29% of the population lose slightly.
+1. **The measurement is adequate for monitoring and targeting.** Free imagery maps built-up land (F1 = 0.80 against
+   WorldCover) and upazila wealth (out-of-area R² = 0.83 against the Relative Wealth Index) with sufficient accuracy
+   for annual city monitoring and for allocating resources across upazilas.
+2. **Early evaluation is not yet feasible.** In the bridge corridor the model-implied effect is less than half a pixel
+   per cell, and the minimum detectable effect is two to four times larger. The null reflects the limits of the design
+   rather than the absence of an effect.
+3. **The implied welfare gain is modest and unevenly distributed.** National welfare rises by 0.47%; three-quarters of
+   the gain accrues to the 19% of the population nearest the bridge, and upazilas holding 29% of the population incur
+   small losses.
 
-### What the usual shortcuts would have concluded
+### Sensitivity of conclusions to common analytical defaults
 
-Each row is a common default, the conclusion it produces on these data, and the result once the default is replaced.
+Each row gives a common default, the conclusion it yields on these data, and the result obtained when the default is
+replaced.
 
-| Common default | What it would have concluded | What the study finds instead |
+| Common default | Conclusion under the default | Result in this study |
 |---|---|---|
-| Pixel classifier at its default threshold | 13.2% of the six cities is built-up, where the reference is 7.2% | 6.2% with the U-Net (F1 0.80 against 0.67) |
-| Least-cloudy scene selection | 11–24% of built-up pixels revert to non-built the next year, noise that reads as urban change | 7–14% with phenology-balanced compositing |
-| Random cross-validation of the wealth map | Upazila R² of 0.92 | 0.83 under 50 km spatial blocks, the figure that applies to areas without labels |
-| Two-way fixed-effects difference-in-differences | The bridge reduced built-up growth (−0.34, randomization p = 0.008) | Selection on trends: 0.06 (CI −0.03 to 0.15) once trends by baseline density are controlled |
-| Reading the null as "no effect" | The bridge did not change land use | The design detects only effects 2.3–4.2 times the model's prediction (power of 8–23%) |
-| One-sector trade model | A welfare gain of 0.79% | 0.47% once a local non-traded sector is included |
+| Pixel classifier at its default threshold | Built-up share of 13.2% on held-out blocks, against a reference of 7.2% | 6.2% with the U-Net (F1 0.80 against 0.67) |
+| Least-cloudy scene selection | 11–24% of built-up pixels revert to non-built in the following year, noise that would be read as urban change | 7–14% with phenology-balanced compositing |
+| Random cross-validation of the wealth map | Upazila R² of 0.92 | 0.83 under 50 km spatial blocks, the relevant figure for areas without labels |
+| Two-way fixed-effects difference-in-differences | A negative effect of the bridge on built-up land (−0.34, randomization p = 0.008) | Selection on trends: 0.06 (CI −0.03 to 0.15) once trends by baseline density are controlled |
+| Interpreting the null as the absence of an effect | The bridge did not alter land use | The minimum detectable effect is 2.3–4.2 times the model-implied effect (power of 8–23%) |
+| One-sector trade model | Welfare gain of 0.79% | 0.47% with a local non-traded sector |
 
-### What this adds to conventional measurement and evaluation
+### Contribution relative to conventional measurement and evaluation
 
-- **Coverage and frequency.** Censuses arrive once a decade and household surveys every few years, and neither is
-  designed to give annual figures for 544 upazilas. The imagery gives an annual built-up series at 20–30 m and a wealth
-  estimate for every upazila, from free inputs.
-- **A null that can be interpreted.** A reduced-form evaluation alone would report "no effect". A structural model
-  alone would report a welfare gain that nothing tests. Putting both on the same outcome gives the effect size the test
-  should be held to, and shows that this design cannot detect it.
+- **Coverage and frequency.** Censuses are decennial and household surveys are conducted every few years; neither is
+  designed to yield annual figures for 544 upazilas. The imagery yields an annual built-up series at 20–30 m and a
+  wealth estimate for every upazila from free inputs.
+- **An interpretable null.** A reduced-form evaluation alone would report no effect; a structural model alone would
+  report a welfare gain that is not confronted with data. Applying both to the same outcome provides the effect size
+  against which the test should be assessed and establishes that this design cannot detect it.
 - **Incidence.** The model reports gains and losses for each of 544 upazilas, which an aggregate appraisal does not.
-- **Speed and reuse.** Each counterfactual solves in 0.03 seconds and the travel-time matrices for six network
-  scenarios take about eight minutes, so another corridor can be appraised by editing the network and the study area.
+- **Speed and reuse.** Each counterfactual solves in 0.03 seconds, and the travel-time matrices for six network
+  scenarios require about eight minutes, so another corridor can be appraised by editing the network and the study
+  area.
 
-It does not replace surveys. Imagery measures the built environment, not consumption: the wealth labels are themselves
-model-based, accuracy for individual grid cells is low (R² = 0.45), and vertical growth is invisible at this
-resolution. The model is calibrated, not estimated, and the evaluation was too imprecise to discipline it: reweighting
-600 parameter draws by the estimate left them essentially unchanged (effective sample size 597).
+The approach complements survey data and does not replace it. Imagery measures the built environment rather than
+consumption: the wealth labels are themselves model-based, accuracy for individual grid cells is low (R² = 0.45), and
+vertical growth is not observable at this resolution. The model is calibrated rather than estimated, and the
+evaluation is too imprecise to discipline it: reweighting 600 parameter draws by the estimate leaves them essentially
+unchanged (effective sample size 597).
 
-### Where the approach applies
+### Applications
 
-1. **Monitoring between censuses.** Annual built-up series for cities, provided scenes are composited by season and
-   temporal-consistency diagnostics are reported alongside.
+1. **Monitoring between censuses.** Annual built-up series for cities, provided that scenes are composited by season
+   and temporal-consistency diagnostics are reported.
 2. **Geographic targeting.** Ranking upazilas for the allocation of resources, validated with spatial blocks. The maps
-   are not accurate enough to target villages or households.
-3. **Planning an evaluation before the data arrive.** The expected effect from a calibrated model and the minimum
-   detectable effect of the design can be computed in advance. Here that calculation shows that four years of built-up
-   imagery could not have settled the question.
-4. **Appraising other corridors,** with gains and losses reported by region and a non-traded sector included.
+   are not sufficiently accurate to target villages or households.
+3. **Ex-ante evaluation design.** The expected effect from a calibrated model and the minimum detectable effect of the
+   design can be computed before outcome data are collected. In this case the calculation shows that four years of
+   built-up imagery could not have resolved the question.
+4. **Appraisal of other corridors,** with gains and losses reported by region and a non-traded sector included.
 
-The same sequence applies wherever an outcome is measured with a learned proxy and treatment is assigned by place:
-validate the proxy on held-out areas, check that it is stable over time, confirm that it registers a change of known
-size, and compute the minimum detectable effect before interpreting a null.
+More generally, the same sequence applies wherever an outcome is measured with a learned proxy and treatment is
+assigned by location: validate the proxy on held-out areas, verify its stability over time, confirm that it registers
+a change of known magnitude, and compute the minimum detectable effect before interpreting a null.
 
-### What would make the effect visible
+### Conditions for detecting the effect
 
-- **A more precise estimate.** 80% power needs a standard error of about 0.021, against 0.048 with upazila clustering
+- **Greater precision.** 80% power requires a standard error of about 0.021, against 0.048 with upazila clustering
   and 0.089 with district clustering.
-- **An outcome with more signal.** Building footprints, night-time lights or land prices may respond more strongly
-  than built-up share at 30 m.
-- **Time and a second shock.** Adjustment accumulates, and the Padma rail link (2023–24) adds a second change in
-  access. A re-evaluation after 2028 is the natural next step.
+- **An outcome with a higher signal-to-noise ratio.** Building footprints, night-time lights or land prices may
+  respond more strongly than built-up share at 30 m; this is not tested here.
+- **A longer horizon and a second shock.** Adjustment accumulates over time, and the Padma rail link (2023–24)
+  provides a second change in access. A re-evaluation after 2028 is the natural next step.
 
 ## Limitations
 
-- Wealth labels are model-based gridded layers, not household survey microdata.
+- Built-up accuracy is measured against ESA WorldCover, itself a satellite-derived product, rather than against
+  ground survey.
+- Wealth labels are model-based gridded estimates rather than household survey microdata, and the Relative Wealth
+  Index itself draws in part on satellite imagery; R² therefore measures agreement with the index.
+- The positive control in step 2 is qualitative: city growth rates are not benchmarked against an independent series.
 - The 2018–2019 Sentinel-2 archive comes from a different processing baseline and cannot extend the pre-period; a
   placebo opening in 2020 fails for that measurement reason.
 - Treatment varies smoothly over space, and the Dhaka–Mawa–Bhanga expressway (2020) and the Padma rail link
   (2023–24) cannot be separated from the bridge.
-- The spatial model is static, covers goods trade only and is calibrated, not estimated; its welfare numbers exclude
-  passenger time savings and commuting.
+- The spatial model is static, covers goods trade only and is calibrated rather than estimated; its welfare figures
+  exclude passenger time savings and commuting.
 
 ## Code map
 

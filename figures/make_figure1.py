@@ -111,7 +111,7 @@ def draw():
     ins.set_xticks([0, 35, 70]); ins.set_yticks([0, 4, 8]); ins.tick_params(labelsize=6, length=1.8, pad=1.5)
     detach(ins)
     fig.text(0.515, 0.957, "d", fontsize=8, fontweight="bold", va="baseline")
-    fig.text(0.531, 0.957, f"Model: welfare +{Q['welfare_sr_pct']:.2f}%, gains in the southwest", fontsize=7.5,
+    fig.text(0.531, 0.957, f"Model-implied welfare gain of {Q['welfare_sr_pct']:.2f}%, concentrated in the southwest", fontsize=7.5,
              va="baseline")
 
     X0, W, H = 0.135, 0.33, 0.20
@@ -134,7 +134,7 @@ def draw():
     leader(b, (2024, series["(2)"][-3][1]), (2022.65, 0.56), "Baseline-density trends controlled", ha="left")
     b.set_xlim(2019.85, 2026.15); b.set_ylim(-2.0, 0.7); b.set_xticks(range(2020, 2027)); b.set_yticks([-2, -1, 0])
     b.set_ylabel("Built-up share\n(pp per log point)")
-    detach(b); letter(fig, b, "c", "Bridge: no detectable effect; power only 8–23%")
+    detach(b); letter(fig, b, "c", "No detectable effect of the bridge (power 8–23%)")
 
     # ---- c: wealth prediction by feature set, spatial-block against random cross-validation
     Wr = [r for r in rows(TB / "wealth_prediction_results.csv") if r["target"] == "rwi"]
@@ -156,7 +156,7 @@ def draw():
     c.set_xlim(0.38, 0.95); c.set_ylim(-0.55, top + 0.55); c.set_xticks([0.4, 0.6, 0.8])
     c.set_xlabel("Out-of-sample R², upazila wealth", labelpad=2)
     c.spines["left"].set_visible(False); c.spines["bottom"].set_position(("outward", 3))
-    letter(fig, c, "a", "Imagery predicts upazila wealth, R² 0.83")
+    letter(fig, c, "a", "Imagery predicts upazila wealth (out-of-area R² = 0.83)")
 
     # ---- d: built-up growth by city and where the new building is
     U0 = sorted(rows(TB / "urban_expansion_summary.csv"), key=lambda r: float(r["growth_pct"]))
@@ -175,7 +175,7 @@ def draw():
     d.set_xlim(0, 82); d.set_ylim(-0.6, len(U0) + 0.25); d.set_xticks([0, 20, 40, 60, 80])
     d.set_xlabel("Growth in built-up area, 2020–2026 (%)", labelpad=2)
     d.spines["left"].set_visible(False); d.spines["bottom"].set_position(("outward", 3))
-    letter(fig, d, "b", "Cities grew 27–72%, mostly at the edge")
+    letter(fig, d, "b", "Built-up area grew 27–72% in six cities, mostly at the edge")
     return fig
 
 

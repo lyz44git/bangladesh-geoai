@@ -245,7 +245,7 @@ def padma(M):
            f'{S["n_cells"]:,} cells in {S["n_upazila"]} upazilas; map shows upazila means',
            transform=a.transAxes, fontsize=6.5, color=INK2)
     fig.text(0.012, 0.957, "a", fontsize=8, fontweight="bold", va="baseline")
-    fig.text(0.028, 0.957, "Exposure: how much the bridge shortens the trip to Dhaka", fontsize=7.5, va="baseline")
+    fig.text(0.028, 0.957, "Exposure: reduction in travel time to Dhaka due to the bridge", fontsize=7.5, va="baseline")
 
     # b: event study, three specifications, 2018-2026 sample
     b = fig.add_axes([0.60, 0.70, 0.385, 0.235])
@@ -272,7 +272,7 @@ def padma(M):
     leader(b, (2021, P["(3)"][2021]), (2019.75, 1.5), "(3) + division × year", ha="left")
     b.set_xlim(2017.7, 2026.2); b.set_ylim(-2.2, 4.7); b.set_xticks(range(2018, 2027, 2)); b.set_yticks([-2, 0, 2])
     b.set_ylabel("Built-up share\n(pp per log point)")
-    detach(b); panel(fig, b, "b", "Pre-trends vanish once density trends are controlled", dx=-0.103)
+    detach(b); panel(fig, b, "b", "Pre-trends are absent once density trends are controlled", dx=-0.103)
 
     # c: specification (2) under alternative choices
     c = fig.add_axes([0.72, 0.085, 0.265, 0.48])
@@ -297,7 +297,7 @@ def padma(M):
     c.set_yticks(range(len(order)), [o[1] for o in order][::-1])
     c.set_xlim(-0.62, 0.30); c.set_ylim(-0.6, len(order) - 0.4); c.set_xticks([-0.6, -0.3, 0, 0.3])
     c.set_xlabel("Effect on built-up share (pp per log point)", labelpad=2, x=0.2)
-    rowaxis(c); panel(fig, c, "c", "The null holds across alternative choices (95% CI)", dx=-0.223)
+    rowaxis(c); panel(fig, c, "c", "The null is robust to alternative specifications (95% CI)", dx=-0.223)
     fig.savefig(FIG / "padma_treatment_and_event_study.png", dpi=300)
 
 
@@ -316,7 +316,7 @@ def model(M):
     a.text(0.05, 0.022, f'Treated upazilas +{C["main"]["pop_lr_treated_pct"]:.1f}%; largest '
            f'+{C["main"]["pop_lr_max_upazila_pct"]:.0f}%', transform=a.transAxes, fontsize=6.5, color=INK2)
     fig.text(0.012, 0.957, "a", fontsize=8, fontweight="bold", va="baseline")
-    fig.text(0.028, 0.957, "Where people move once migration adjusts (model)", fontsize=7.5, va="baseline")
+    fig.text(0.028, 0.957, "Model-implied long-run population change", fontsize=7.5, va="baseline")
 
     # inset: who gains, by wealth fifth of the population (short-run real income, model)
     I = json.loads((TB / "qse_incidence.json").read_text())
@@ -373,7 +373,7 @@ def model(M):
     c.set_yticks([2, 1, 0], ["Model implies", "Estimate, upazila clusters", "Estimate, district clusters"])
     c.set_xlim(-0.14, 0.37); c.set_ylim(-0.55, 2.5); c.set_xticks([-0.1, 0, 0.1, 0.2, 0.3])
     c.set_xlabel("Built-up share (pp per log point)", labelpad=2)
-    rowaxis(c); panel(fig, c, "c", "Smallest detectable effect (bar): 2–4 times the model's", dx=-0.188)
+    rowaxis(c); panel(fig, c, "c", "Minimum detectable effect (bar): 2–4 times the model-implied effect", dx=-0.188)
 
     # d: the model-implied effect in a typical treated cell, in pixels (schematic, with an enlarged window)
     tc = Pw["typical_treated_cell"]
@@ -403,7 +403,7 @@ def model(M):
     d.text(n / 2, n + 1.8, f'1.2 km cell, {tc["pixels_per_cell"]:,} pixels', fontsize=6, ha="center", va="top",
            color=INK2)
     zo.text((z0 + z1) / 2, z1 + 0.45, "enlarged 4× (schematic)", fontsize=6, ha="center", va="top", color=INK2)
-    panel(fig, d, "d", "In a typical treated cell the model implies under half a pixel", dx=-0.038)
+    panel(fig, d, "d", "Model-implied effect in a typical treated cell: 0.4 of one pixel", dx=-0.038)
     tx, ty = 0.872, zo.get_position().y1 - 0.03
     blocks = [(C_OLD, "Built-up before", f'{tc["baseline_built_pp"]:.2f}% of the cell,', f'about {tc["baseline_built_pixels"]:.0f} pixels'),
               (C_NEW, "Model implies", f'+{tc["model_implied_effect_pp"]:.3f} pp, about', f'{tc["model_implied_effect_pixels"]:.1f} of one pixel')]
@@ -461,7 +461,7 @@ def measurement(M):
         b.set_aspect("equal", adjustable="box")
         b.set_xlabel("Label, upazila mean", labelpad=2); b.set_ylabel("Predicted", labelpad=2)
         b.text(1.55, -0.45, f"{len(u)} upazilas", ha="right", fontsize=6.5, color=INK2)
-        detach(b); panel(fig, b, "b", "Upazila means track the label", dx=-0.06)
+        detach(b); panel(fig, b, "b", "Predicted and labeled upazila means agree", dx=-0.06)
     else:
         b.set_visible(False)
 
@@ -476,7 +476,7 @@ def measurement(M):
     c.set_yticks(range(len(order)), [names[k] for k in order]); c.tick_params(axis="y", labelsize=6.3)
     c.set_xlim(0.36, 0.95); c.set_ylim(-0.6, len(order) - 0.4); c.set_xticks([0.4, 0.6, 0.8])
     c.set_xlabel("Out-of-sample R², upazila wealth", labelpad=2)
-    rowaxis(c); panel(fig, c, "c", "Random folds overstate accuracy", dx=-0.223)
+    rowaxis(c); panel(fig, c, "c", "Random folds overstate out-of-area accuracy", dx=-0.223)
 
     # d: year-to-year noise of built-up maps under the two compositing designs
     d = fig.add_axes([0.72, 0.085, 0.265, 0.135])
@@ -490,7 +490,7 @@ def measurement(M):
     d.set_yticks(range(len(U)), [r["city"].title() for r in U]); d.tick_params(axis="y", labelsize=6.3)
     d.set_xlim(0, 27); d.set_ylim(-0.6, len(U) + 0.1); d.set_xticks([0, 10, 20])
     d.set_xlabel("Built pixels that flip back next year (%)", labelpad=2)
-    rowaxis(d); panel(fig, d, "d", "Balanced compositing cuts noise", dx=-0.223)
+    rowaxis(d); panel(fig, d, "d", "Phenology-balanced compositing reduces noise", dx=-0.223)
     fig.savefig(FIG / "measurement.png", dpi=300)
 
 
@@ -591,7 +591,7 @@ def urban_series(R=None):
         b.set_xlim(0, 25); b.set_ylim(0, 21); b.set_xticks([0, 5, 10, 15, 20, 25]); b.set_yticks([0, 10, 20])
         b.set_xlabel("Distance from the city center (km)", labelpad=2)
         b.set_ylabel("Built-up share added\n2020–2026 (pp)")
-        detach(b); panel(fig, b, "b", "Large cities add most 4–7 km out", dx=-0.06, dy=0.03)
+        detach(b); panel(fig, b, "b", "Two largest cities: additions peak at 4–7 km", dx=-0.06, dy=0.03)
     else:
         b.set_visible(False)
 
@@ -604,7 +604,7 @@ def urban_series(R=None):
     c.set_yticks(range(len(G)), [r["city"].title() for r in G])
     c.set_xlim(0, 1.0); c.set_ylim(-0.55, len(G) - 0.1); c.set_xticks([0, 0.5, 1.0])
     c.set_xlabel("Density gradient (per km)", labelpad=2)
-    rowaxis(c); panel(fig, c, "c", "Gradients flatten", dx=-0.085, dy=0.03)
+    rowaxis(c); panel(fig, c, "c", "Density gradients flatten", dx=-0.085, dy=0.03)
     fig.savefig(FIG / "urban_area_and_profiles.png", dpi=300)
 
 

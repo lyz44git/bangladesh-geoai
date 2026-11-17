@@ -37,6 +37,14 @@
   "upazila clusters": 2.2824826567493197,
   "district clusters": 4.199518839842313
  },
+ "upper_confidence_bound": {
+  "upazila clusters": 0.15389380441354067,
+  "district clusters": 0.23311655547757948
+ },
+ "upper_confidence_bound_relative_to_model_effect": {
+  "upazila clusters": 2.605276131099178,
+  "district clusters": 3.9464421590214305
+ },
  "typical_treated_cell": {
   "treatment_intensity_log_points": 0.4439484775066376,
   "pixels_per_cell": 1600,

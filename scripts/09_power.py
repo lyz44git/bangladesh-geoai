@@ -2,7 +2,8 @@
 
 Reads committed tables only (no data needed) and writes outputs/tables/padma_power.json:
 power of a two-sided 5% test (normal approximation), the standard error and the minimum detectable
-effect at 80% power, and the model-implied effect in a typical treated cell expressed in 30 m pixels.
+effect at 80% power, the upper confidence bound relative to the model-implied effect, and the
+model-implied effect in a typical treated cell expressed in 30 m pixels.
 """
 import json
 import sys
@@ -32,6 +33,12 @@ for ename, b in effects.items():
 b = effects["main parameters"]
 out["minimum_detectable_effect_80pct_power"] = {k: minimum_detectable_effect(s) for k, s in se.items()}
 out["mde_relative_to_model_effect"] = {k: minimum_detectable_effect(s) / b for k, s in se.items()}
+
+# Upper end of the 95% confidence interval: the largest effect the estimate does not reject.
+ci_hi = {"upazila clusters": float(did.loc[[i for i in did.index if i.startswith("main: (2)")][0], "ci_hi"]),
+         "district clusters": float(did.loc["cluster by district", "ci_hi"])}
+out["upper_confidence_bound"] = ci_hi
+out["upper_confidence_bound_relative_to_model_effect"] = {k: v / b for k, v in ci_hi.items()}
 
 # The model-implied effect in a typical treated cell (mean treatment intensity among cells with D > 0.05).
 smp = json.loads((T / "padma_sample_description.json").read_text())
