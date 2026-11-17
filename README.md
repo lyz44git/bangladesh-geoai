@@ -129,11 +129,14 @@ The contrast with the bridge corridor is material to step 4. Built-up area in th
 from a large base. The rural areas served by the bridge start from 0.37% built-up, so even a large proportional
 response adds very little built-up land in absolute terms.
 
-![Built-up land in 2020 and land added by 2026 in six cities, each with a 10 km scale bar](outputs/figures/urban_change_maps.png)
+![For each of six cities, the Sentinel-2 natural-color composite for 2026 next to the map of built-up land in 2020 and land added by 2026, with a 10 km scale bar](outputs/figures/urban_change_pairs.jpg)
 
-**Figure 3 | Built-up land in six cities.** Built-up land in 2020 and land added by 2026, from the U-Net maps. Each
-panel shows the study area of one city with a 10 km scale bar, the growth in built-up area, and the built-up area in
-2020 and 2026.
+**Figure 3 | Built-up land in six cities.** For each city, left, the Sentinel-2 dry-season composite for 2026 in
+natural color and, right, built-up land in 2020 and land added by 2026 from the U-Net maps, over the same area. Each
+pair gives the growth in built-up area and the built-up area in 2020 and 2026; scale bars, 10 km. The maps alone are
+available at full size in [`outputs/figures/urban_change_maps.png`](outputs/figures/urban_change_maps.png). Drawn by
+[`figures/make_city_pairs.py`](figures/make_city_pairs.py) from the re-run described under Reproduction; contains
+modified Copernicus Sentinel data (2026).
 
 ![Smoothed built-up area by city; built-up share added between 2020 and 2026 by distance from the city center; density gradients in 2020 and 2026](outputs/figures/urban_area_and_profiles.png)
 
@@ -370,7 +373,8 @@ folder; result tables and figures are in `outputs/`.
 The remaining figures in this README, the report and the atlas are drawn by
 `python figures/make_report_figures.py gadm41_BGD_3.json`. It also reads the pipeline rasters in `data/` (or in the
 folder named by `GEOAI_DATA`) for the wealth, travel-time and city maps, and falls back to upazila-level maps without
-them.
+them. Figure 3 is drawn by `python figures/make_city_pairs.py` and needs the city composites and
+built-up maps.
 
 **Reproduction check.** The pipeline was re-run from the raw data on a separate machine on 16 November 2026 for the six
 cities, the national composite and the wealth study (steps 1–2 and the travel-time model; the Padma-region composites

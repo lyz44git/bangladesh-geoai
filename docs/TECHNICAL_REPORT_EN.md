@@ -132,7 +132,7 @@ For six cities (Dhaka, Chattogram, Khulna, Rajshahi, Sylhet, Barishal), annual p
 
 Edge expansion accounts for 50–64% of new built-up land, infill for 18–40% and outlying development for 9–18%; new development follows radial roads (Figure 2). Secondary cities grow faster than Dhaka, and density gradients flatten in every city where both years can be compared, consistent with suburbanization in a monocentric framework (lower commuting costs or rising incomes; the data cannot separate the two). Because 10–20 m imagery cannot detect vertical densification, Dhaka's +27% is a horizontal measure that understates growth in the core.
 
-![Figure 2. Built-up land in 2020 (dark) and land added 2020–2026 (orange), six cities.](../outputs/figures/urban_change_maps.png)
+![Figure 2. Six cities: the Sentinel-2 natural-color composite for 2026 (left of each pair) and, mapped from it, built-up land in 2020 (dark) and land added 2020–2026 (orange) (right).](../outputs/figures/urban_change_pairs.jpg)
 
 In Dhaka and Chattogram the largest additions lie 4–7 km from the center; in the four smaller cities they lie within about 3 km (Figure 3b, drawn from the re-run rasters described in Section 9); density gradients flatten in every city where both years can be compared (Figure 3c).
 
