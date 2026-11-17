@@ -1,5 +1,5 @@
 ---
-title: "Evaluating a Major Transport Investment with Open Satellite Data: Measurement, Urban Growth and the Padma Bridge in Bangladesh (2018–2026)"
+title: "Too Early to See from Space: Open Satellite Data, Urban Growth and the Padma Bridge in Bangladesh (2018–2026)"
 subtitle: "Technical Report and Sub-District Indicator Atlas"
 date: "November 2026"
 ---
